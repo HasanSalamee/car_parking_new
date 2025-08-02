@@ -1,0 +1,12 @@
+{
+  "loginTitle": "مواقف السيارات",
+  "loginSubtitle": "سجل الدخول لإدارة مواقفك",
+  "emailLabel": "البريد الإلكتروني",
+  "passwordLabel": "كلمة المرور",
+  "loginButton": "تسجيل الدخول",
+  "noAccount": "ليس لديك حساب؟ إنشاء حساب جديد",
+  "emailRequired": "البريد الإلكتروني مطلوب",
+  "emailInvalid": "البريد الإلكتروني غير صالح",
+  "passwordRequired": "كلمة المرور مطلوبة",
+  "passwordMinLength": "يجب أن تكون كلمة المرور 6 أحرف على الأقل"
+}

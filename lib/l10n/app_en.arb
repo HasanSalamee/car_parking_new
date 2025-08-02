@@ -1,0 +1,12 @@
+{
+  "loginTitle": "Car Parking",
+  "loginSubtitle": "Log in to manage your parking",
+  "emailLabel": "Email",
+  "passwordLabel": "Password",
+  "loginButton": "Log In",
+  "noAccount": "Don't have an account? Sign Up",
+  "emailRequired": "Email is required",
+  "emailInvalid": "Invalid email",
+  "passwordRequired": "Password is required",
+  "passwordMinLength": "Password must be at least 6 characters"
+}

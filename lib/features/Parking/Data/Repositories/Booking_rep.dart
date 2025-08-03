@@ -35,7 +35,8 @@ class BookingParkingRepositoryImpl implements ParkingBookingRepository {
       return Left(UnknownFailure());
     }
   }
-   @override
+
+  @override
   Future<Either<Failure, List<GarageEntity>>> searchAvailableGarages1({
     required DateTime arrivalTime,
     required DateTime departureTime,
@@ -158,12 +159,43 @@ class BookingParkingRepositoryImpl implements ParkingBookingRepository {
     }
   }
 
+/*
   @override
   Future<Either<Failure, List<BookingModel>>> getUserBookings(
       String userId) async {
     try {
       final bookings = await remoteDataSource.getUserBookings();
       return Right(bookings);
+    } on SocketException {
+      return Left(NetworkFailure(message1: 'فشل الاتصال بالانترنت'));
+    } on HttpException catch (e) {
+      return Left(ServerFailure(e.message));
+    } catch (e) {
+      return Left(UnknownFailure());
+    }
+  }*/
+//new after update
+  @override
+  Future<Either<Failure, List<BookingModel>>> getUserBookings(
+      String userId) async {
+    try {
+      final bookings = await remoteDataSource.getUserBookings();
+
+      final now = DateTime.now();
+      final startOfToday = DateTime(now.year, now.month, now.day);
+      final endOfToday =
+          DateTime(now.year, now.month, now.day, 23, 59, 59, 999);
+
+      final filteredBookings = bookings.where((booking) {
+        final isActive = booking.end.isAfter(now);
+
+        final endedToday = booking.end.isAfter(startOfToday) &&
+            booking.end.isBefore(endOfToday);
+
+        return isActive || endedToday;
+      }).toList();
+
+      return Right(filteredBookings);
     } on SocketException {
       return Left(NetworkFailure(message1: 'فشل الاتصال بالانترنت'));
     } on HttpException catch (e) {

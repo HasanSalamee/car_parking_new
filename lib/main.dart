@@ -64,9 +64,8 @@ class MyApp extends StatelessWidget {
 
     // payment
     final paymentLocalDataSource = PaymentLocalDataSourceImpl(storage: storage);
-    final paymentRemoteDataSource = PaymentRemoteDataSourceImpl(
-      dio: _dio,
-    );
+    final paymentRemoteDataSource =
+        PaymentRemoteDataSourceImpl(_dio, httpHeadersProvider);
     final paymentRepository = PaymentRepositoryImpl(
       remoteDataSource: paymentRemoteDataSource,
       localDataSource: paymentLocalDataSource,

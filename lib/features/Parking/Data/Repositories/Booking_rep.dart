@@ -12,7 +12,7 @@ class BookingParkingRepositoryImpl implements ParkingBookingRepository {
   final ParkingRemoteDataSource remoteDataSource;
 
   BookingParkingRepositoryImpl(this.remoteDataSource);
-
+//Not used Sreach with latlng
   @override
   Future<Either<Failure, List<GarageEntity>>> searchAvailableGarages({
     required DateTime arrivalTime,
@@ -36,6 +36,7 @@ class BookingParkingRepositoryImpl implements ParkingBookingRepository {
     }
   }
 
+//Search with city Name
   @override
   Future<Either<Failure, List<GarageEntity>>> searchAvailableGarages1({
     required DateTime arrivalTime,
@@ -58,6 +59,7 @@ class BookingParkingRepositoryImpl implements ParkingBookingRepository {
     }
   }
 
+//Not Used
   @override
   Future<Either<Failure, BookingEntity>> createBooking(
       BookingEntity booking) async {
@@ -73,6 +75,7 @@ class BookingParkingRepositoryImpl implements ParkingBookingRepository {
     }
   }
 
+//Not used
   @override
   Future<bool> checkAvailability({
     required String garageId,
@@ -90,6 +93,7 @@ class BookingParkingRepositoryImpl implements ParkingBookingRepository {
     }
   }
 
+//Not used
   @override
   Future<Either<Failure, void>> updateBookingStatus({
     required String bookingId,
@@ -110,6 +114,7 @@ class BookingParkingRepositoryImpl implements ParkingBookingRepository {
     }
   }
 
+//Not used
   @override
   Future<Either<Failure, void>> cancelBooking(String bookingId) async {
     try {
@@ -124,6 +129,7 @@ class BookingParkingRepositoryImpl implements ParkingBookingRepository {
     }
   }
 
+//not used
   @override
   Future<Either<Failure, BookingEntity>> confirmBooking(
       String bookingId) async {
@@ -139,6 +145,7 @@ class BookingParkingRepositoryImpl implements ParkingBookingRepository {
     }
   }
 
+//Not used
   @override
   Future<Either<Failure, BookingModel>> extendBooking(
     String bookingId,

@@ -62,11 +62,8 @@ class _HomeScreenState extends State<HomeScreen> {
           },
         ),
 
-        // الاستماع لتغيرات حالة الحجوزات
         BlocListener<ParkingBookingBloc, ParkingBookingState>(
-          listener: (context, bookingState) {
-            // يمكنك إضافة معالجات إضافية هنا إذا لزم الأمر
-          },
+          listener: (context, bookingState) {},
         ),
       ],
       child: Scaffold(

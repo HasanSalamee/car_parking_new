@@ -14,15 +14,14 @@ class GarageModel extends GarageEntity {
 
   factory GarageModel.fromJson(Map<String, dynamic> json) {
     return GarageModel(
-        id: json['garageId'], // تحويل GUID إلى سلسلة نصية
-        name: json['name'], // قيمة افتراضية في حالة null
+        id: json['garageId'],
+        name: json['name'],
         location: LatLng(
-          (json['latitude'] as num?)?.toDouble() ?? 0.0, // تحويل وافتراضي
-          (json['longitude'] as num?)?.toDouble() ?? 0.0, // تحويل وافتراضي
+          (json['latitude'] as num?)?.toDouble() ?? 0.0,
+          (json['longitude'] as num?)?.toDouble() ?? 0.0,
         ),
-        capacity: (json['capacity'] as num?)?.toInt() ?? 0, // تحويل وافتراضي
-        pricePerHour:
-            (json['pricePerHour'] as num?)?.toInt() ?? 0, // تحويل وافتراضي
+        capacity: (json['capacity'] as num?)?.toInt() ?? 0,
+        pricePerHour: (json['pricePerHour'] as num?)?.toInt() ?? 0,
         area: (json['Area'] as num?)?.toString() ?? "",
         availableSpot: (json['AvailableSpot'] as num?)?.toInt() ?? 0);
   }

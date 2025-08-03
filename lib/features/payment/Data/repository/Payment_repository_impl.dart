@@ -67,7 +67,7 @@ class PaymentRepositoryImpl implements PaymentRepository {
       }
 
       // 2. Deduct amount
-  //  await remoteDataSource.updateWalletBalance(userId, -amount);
+      //  await remoteDataSource.updateWalletBalance(userId, -amount);
 
       // 3. Create transaction
       final transaction = await remoteDataSource.createPaymentTransaction(

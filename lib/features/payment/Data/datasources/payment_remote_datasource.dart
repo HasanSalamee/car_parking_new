@@ -1,4 +1,5 @@
 import 'package:car_parking/Core/errors/Failure.dart';
+import 'package:car_parking/Core/network/tok.dart';
 import 'package:car_parking/features/payment/Data/models/transaction_model.dart';
 import 'package:car_parking/features/payment/Domain/entity/transaction_entity.dart';
 import 'package:dio/dio.dart';
@@ -38,7 +39,8 @@ abstract class PaymentRemoteDataSource {
 
 class PaymentRemoteDataSourceImpl implements PaymentRemoteDataSource {
   final Dio dio;
-  PaymentRemoteDataSourceImpl({required this.dio});
+  final HttpHeadersProvider headersProvider;
+  PaymentRemoteDataSourceImpl(this.dio, this.headersProvider);
 
   @override
   Future<TransactionModel> createPaymentTransaction({
@@ -215,6 +217,7 @@ class PaymentRemoteDataSourceImpl implements PaymentRemoteDataSource {
     }
   }
 
+//
   @override
   Future<void> updateBookingStatus(String bookingId, String status) async {
     try {
@@ -254,10 +257,16 @@ class PaymentRemoteDataSourceImpl implements PaymentRemoteDataSource {
     }
   }
 
+//
   @override
   Future<double> getWalletBalance(String userId) async {
+    final headers = await headersProvider.getAuthHeaders();
+
     try {
-      final response = await dio.get('api/wallet/my-wallet');
+      final response = await dio.get(
+        'api/wallet/my-wallet',
+        options: Options(headers: headers),
+      );
 
       return (response.data as num).toDouble();
     } on DioException catch (e) {
@@ -274,7 +283,6 @@ class PaymentRemoteDataSourceImpl implements PaymentRemoteDataSource {
 
   @override
   Future<double> getWalletBalanceFromServer(String userId) async {
-    // استخدام نفس تنفيذ getWalletBalance
     return getWalletBalance(userId);
   }
 

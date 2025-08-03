@@ -28,7 +28,7 @@ class PaymentWalletBloc extends Bloc<PaymentWalletEvent, PaymentWalletState> {
     on<RefreshWalletBalance>(_onRefreshWalletBalance);
     on<FetchWalletBalance>(_onFetchWalletBalance);
     // Transaction history event
-    on<GetTransactionHistory>(_onGetTransactionHistory); // إضافة معالج الحدث الجديد
+    on<GetTransactionHistory>(_onGetTransactionHistory); 
   }
 
   Future<void> _onProcessPayment(

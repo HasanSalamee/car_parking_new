@@ -38,10 +38,8 @@ abstract class PaymentRepository {
     DateTime? startDate,
     DateTime? endDate,
   });
-  // دالة جديدة: جلب الرصيد من الخادم
   Future<double> getWalletBalanceFromServer(String userId);
 
-  // دالة جديدة: تحديث الرصيد على الخادم
   Future<void> updateWalletBalanceOnServer(String userId, double newBalance);
 
   Future<double> fetchAndCacheWalletBalance(String userId);

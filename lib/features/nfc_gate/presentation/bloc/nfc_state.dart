@@ -32,7 +32,6 @@ class TicketWritten extends NfcState {
   List<Object> get props => [message];
 }
 
-// حالات جديدة لدعم البلوتوث
 class SendingTicketViaBluetooth extends NfcState {}
 
 class TicketSentViaBluetooth extends NfcState {

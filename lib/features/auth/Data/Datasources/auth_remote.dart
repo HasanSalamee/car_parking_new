@@ -51,8 +51,6 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     }
   }
 
-  
-
   @override
   Future<TokenModel> login({
     required String email,
@@ -103,12 +101,12 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     final headers = await headersProvider.getAuthHeaders();
 
     try {
-      print(token);
+      // print(token);
       final response = await dio.get(
         "api/Auth/me",
         options: Options(headers: headers),
       );
-      print(response);
+      // print(response);
 
       if (response.statusCode == 200) {
         return UserModel.fromJson(

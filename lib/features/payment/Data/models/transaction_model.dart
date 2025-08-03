@@ -36,7 +36,7 @@ class TransactionModel extends TransactionEntity {
       'status': status,
       'createdAt': createdAt.toIso8601String(),
       'walletId': walletId,
-      'booking': (booking as BookingModel).toJson(), // كتحويل عكسي
+      'booking': (booking as BookingModel).toJson(), 
       'nfcTicket': (nfcTicket as NfcTicket).toJson(),
     };
   }

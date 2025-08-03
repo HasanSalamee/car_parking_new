@@ -26,7 +26,6 @@ class PaymentRepositoryImpl implements PaymentRepository {
         statusCode: e.response?.statusCode,
       ));
     } on Exception catch (e) {
-      // تم استبدال DatabaseException
       return Left(DatabaseFailure(e.toString()));
     } catch (e) {
       return Left(UnknownFailure.fromError(e));
@@ -48,7 +47,6 @@ class PaymentRepositoryImpl implements PaymentRepository {
         statusCode: e.response?.statusCode,
       ));
     } on Exception catch (e) {
-      // تم استبدال DatabaseException
       return Left(DatabaseFailure(e.toString()));
     } catch (e) {
       return Left(UnknownFailure.fromError(e));
@@ -88,7 +86,6 @@ class PaymentRepositoryImpl implements PaymentRepository {
         statusCode: e.response?.statusCode,
       ));
     } on Exception catch (e) {
-      // تم استبدال DatabaseException
       return Left(DatabaseFailure(e.toString()));
     } catch (e) {
       return Left(UnknownFailure.fromError(e));
@@ -261,7 +258,6 @@ class PaymentRepositoryImpl implements PaymentRepository {
         statusCode: e.response?.statusCode,
       );
     } on Exception catch (e) {
-      // تم استبدال DatabaseException
       throw DatabaseFailure(e.toString());
     } catch (e) {
       throw UnknownFailure.fromError(e);
@@ -277,15 +273,12 @@ class PaymentRepositoryImpl implements PaymentRepository {
   @override
   Future<double> fetchAndCacheWalletBalance(String userId) async {
     try {
-      // 1. جلب الرصيد من الخادم
       final balance = await remoteDataSource.getWalletBalanceFromServer(userId);
 
-      // 2. تخزينه محلياً
       await localDataSource.cacheWalletBalance(userId, balance);
 
       return balance;
     } catch (e) {
-      // 3. في حالة الخطأ: إرجاع القيمة المحلية
       return localDataSource.getWalletBalanceForDisplay(userId);
     }
   }

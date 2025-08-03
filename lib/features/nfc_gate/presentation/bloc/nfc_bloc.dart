@@ -47,14 +47,12 @@ class NfcBloc extends Bloc<NfcEvent, NfcState> {
     );
   }
 
-  // إضافة المعالجة الجديدة للبلوتوث
   Future<void> _onSendTicketViaBluetooth(
     SendTicketViaBluetoothEvent event,
     Emitter<NfcState> emit,
   ) async {
     emit(SendingTicketViaBluetooth());
 
-    // تسلسل التذكرة إلى نص (نفس ما في الـ repository)
     final ticketData = _serializeTicket(event.ticket);
 
     final result = await SendTicketViaBluetoothUseCase(repository)(ticketData);

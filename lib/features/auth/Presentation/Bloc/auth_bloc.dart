@@ -24,8 +24,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
     on<LoginEvent>((event, emit) async {
       emit(AuthLoading());
-      print("🔐 AuthBloc: LoginEvent received");
-      print("📧 Email: ${event.email}, 🔑 Password: ${event.password}");
+    //  print("🔐 AuthBloc: LoginEvent received");
+    // print("📧 Email: ${event.email}, 🔑 Password: ${event.password}");
 
       final result = await LoginUseCase(authRepository)(
         email: event.email,
@@ -34,11 +34,11 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
       result.fold(
         (failure) {
-          print("❌ Login failed with message: ${failure.message}");
+        //  print("❌ Login failed with message: ${failure.message}");
           emit(AuthFailure(failure.message));
         },
         (token) {
-          print("✅ Login success, token received: $token");
+        //  print("✅ Login success, token received: $token");
           emit(AuthSuccess(token));
         },
       );

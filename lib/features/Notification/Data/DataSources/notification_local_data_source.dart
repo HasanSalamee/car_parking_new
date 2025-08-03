@@ -34,7 +34,7 @@ class NotificationLocalDataSourceImpl implements NotificationLocalDataSource {
     required DateTime scheduledTime,
   }) async {
     await flutterLocalNotificationsPlugin.zonedSchedule(
-      id, // تحويل id من String إلى int
+      id,
       title,
       body,
       tz.TZDateTime.from(scheduledTime, tz.local),
@@ -47,8 +47,7 @@ class NotificationLocalDataSourceImpl implements NotificationLocalDataSource {
           priority: Priority.high,
         ),
       ),
-      androidScheduleMode: AndroidScheduleMode
-          .exactAllowWhileIdle, // استبدال androidAllowWhileIdle
+      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
       uiLocalNotificationDateInterpretation:
           UILocalNotificationDateInterpretation.absoluteTime,
     );

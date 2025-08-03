@@ -28,7 +28,6 @@ class WriteNfcTicketEvent extends NfcEvent {
   List<Object> get props => [ticket];
 }
 
-// ** إضافة حدث جديد لإرسال التذكرة عبر Bluetooth **
 class SendTicketViaBluetoothEvent extends NfcEvent {
   final NfcTicket ticket;
 

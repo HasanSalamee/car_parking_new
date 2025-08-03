@@ -1,7 +1,6 @@
 import 'package:car_parking/Core/errors/Failure.dart';
 import 'package:car_parking/features/nfc_gate/data/datasources/nfc_local_datasource.dart';
 import 'package:car_parking/features/nfc_gate/data/datasources/nfc_remote_datasource.dart';
-import 'package:car_parking/features/nfc_gate/data/model/NDEFRecord.dart';
 import 'package:car_parking/features/nfc_gate/domain/entities/nfs_ticket.dart';
 import 'package:car_parking/features/nfc_gate/domain/repositories/nfc_repository.dart';
 import 'package:dartz/dartz.dart';

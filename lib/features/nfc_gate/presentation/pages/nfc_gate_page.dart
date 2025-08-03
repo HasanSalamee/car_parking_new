@@ -18,7 +18,7 @@ class PairingScreen extends StatefulWidget {
 }
 
 class _PairingScreenState extends State<PairingScreen> {
-  SendMethod _selectedMethod = SendMethod.bluetooth; // الوضع الافتراضي: بلوتوث
+  SendMethod _selectedMethod = SendMethod.bluetooth;
 
   @override
   Widget build(BuildContext context) {

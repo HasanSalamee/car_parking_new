@@ -86,7 +86,6 @@ class TransactionHistoryLoaded extends PaymentWalletState {
   List<Object?> get props => [transactions];
 }
 
-/// حدث خطأ أثناء أي عملية
 class PaymentWalletError extends PaymentWalletState {
   final Failure failure;
 

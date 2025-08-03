@@ -13,7 +13,7 @@ class AuthLoading extends AuthState {}
 
 class AuthSuccess extends AuthState {
   final dynamic
-      data; // يمكن أن يكون UserEntity (من signup) أو TokenEntity (من login)
+      data; 
 
   const AuthSuccess(this.data);
 

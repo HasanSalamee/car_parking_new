@@ -254,17 +254,11 @@ class PaymentRemoteDataSourceImpl implements PaymentRemoteDataSource {
     }
   }
 
-  // ========================================================
-  // التوابع المعدلة للتوافق مع السيرفر
-  // ========================================================
-
   @override
   Future<double> getWalletBalance(String userId) async {
     try {
-      // تم التعديل لاستخدام المسار الصحيح وفقًا للسيرفر
       final response = await dio.get('api/wallet/my-wallet');
 
-      // تم التعديل لاستخراج الرصيد بشكل صحيح
       return (response.data as num).toDouble();
     } on DioException catch (e) {
       throw NetworkFailure(
@@ -284,17 +278,9 @@ class PaymentRemoteDataSourceImpl implements PaymentRemoteDataSource {
     return getWalletBalance(userId);
   }
 
-  /* @override
-  Future<void> updateWalletBalance(String userId, double newBalance) async {
-    // تم إزالة هذا التطبيق لأن السيرفر لا يدعم التحديث المباشر للرصيد
-    // بدلاً من ذلك يجب استخدام عمليات الإيداع/الخصم
-    throw UnimplementedError(
-        'Direct balance update not supported. Use deposit/deduct instead');
-  }*/
   @override
   Future<void> updateWalletBalance(String userId, double newBalance) async {
     try {
-      // تم الحفاظ على التطبيق الأصلي كما طلبت
       await dio.put(
         'wallet/balance',
         data: {'balance': newBalance},

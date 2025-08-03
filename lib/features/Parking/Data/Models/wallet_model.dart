@@ -1,4 +1,4 @@
-import 'package:car_parking/features/Parking/Domain/Entities/wallet_entity.dart';
+/*import 'package:car_parking/features/Parking/Domain/Entities/wallet_entity.dart';
 
 class WalletModel extends Wallet {
   const WalletModel({
@@ -23,3 +23,4 @@ class WalletModel extends Wallet {
     );
   }
 }
+*/

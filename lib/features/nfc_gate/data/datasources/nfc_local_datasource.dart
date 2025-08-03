@@ -37,7 +37,6 @@ class NfcLocalDatasource {
     );
   }
 
-  // ======== الدوال المساعدة ========
   String _serializeTicket(NfcTicket ticket) {
     return '${ticket.id}|${ticket.token}|${ticket.bookingId}|'
         '${ticket.userId}|'

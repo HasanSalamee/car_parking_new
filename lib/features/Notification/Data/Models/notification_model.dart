@@ -24,7 +24,7 @@ class NotificationModel extends NotificationEntity {
       type: json['type'] as String,
       sentAt: DateTime.parse(json['sentAt']),
       userId: json['userId'] as String,
-      bookingId: json['bookingId'], // ممكن تكون null
+      bookingId: json['bookingId'],
     );
   }
 

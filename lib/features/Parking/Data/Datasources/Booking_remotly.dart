@@ -78,7 +78,7 @@ class ParkingRemoteDataSourceImpl implements ParkingRemoteDataSource {
   Future<List<GarageEntity>> searchAvailableGarages1({
     required DateTime arrivalTime,
     required DateTime departureTime,
-    required String city, // تم استبدال LatLng بـ String للمدينة
+    required String city, 
   }) async {
     try {
       final response = await dio.get('api/Garage/search', queryParameters: {
@@ -99,7 +99,7 @@ class ParkingRemoteDataSourceImpl implements ParkingRemoteDataSource {
   @override
   Future<BookingModel> createBooking(BookingEntity booking) async {
     try {
-      // استخدام BookingModel مباشرة كما في الكود الأصلي
+     
       final bookingModel = BookingModel(
         id: booking.id,
         start: booking.start,
@@ -129,7 +129,6 @@ class ParkingRemoteDataSourceImpl implements ParkingRemoteDataSource {
       throw ServerException.fromDioError(e);
     }
   }
-  
 
   @override
   Future<void> cancelBooking(String bookingId) async {

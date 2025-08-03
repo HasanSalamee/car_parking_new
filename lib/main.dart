@@ -55,7 +55,7 @@ class MyApp extends StatelessWidget {
     // auth
     final authRemoteDataSource = AuthRemoteDataSourceImpl(
       _dio,
-      httpHeadersProvider, // تمت إضافة headersProvider
+      httpHeadersProvider,
     );
     final authRepository = AuthRepositoryImpl(
       remoteDataSource: authRemoteDataSource,

@@ -4,10 +4,10 @@ import 'package:equatable/equatable.dart';
 class NotificationEntity extends Equatable {
   final String notificationId;
   final String message;
-  final String type; // مثل 'booking_created', 'payment_failed'
+  final String type; 
   final DateTime sentAt;
-  final String userId; // ForeignKey لـ USER
-  final String? bookingId; // ForeignKey لـ BOOKING (اختياري)
+  final String userId; 
+  final String? bookingId; 
 
   const NotificationEntity({
     required this.notificationId,

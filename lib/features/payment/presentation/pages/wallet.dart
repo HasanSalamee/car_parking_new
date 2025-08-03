@@ -21,7 +21,6 @@ class _WalletScreenState extends State<WalletScreen> {
   void didChangeDependencies() {
     super.didChangeDependencies();
 
-    // استقبال الـ userId من الـ arguments
     final args = ModalRoute.of(context)?.settings.arguments;
     if (args is String) {
       _userId = args;

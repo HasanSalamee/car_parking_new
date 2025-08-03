@@ -40,7 +40,7 @@ class PaymentSuccessScreen extends StatelessWidget {
                   context,
                   MaterialPageRoute(
                     builder: (context) => PairingScreen(
-                      nfcTicket: transaction.nfcTicket, // تمرير NfcTicket
+                      nfcTicket: transaction.nfcTicket,
                     ),
                   ),
                 );
@@ -59,7 +59,6 @@ class PaymentSuccessScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
-            // زر العودة للرئيسية
             ElevatedButton(
               onPressed: () {
                 Navigator.pushNamedAndRemoveUntil(

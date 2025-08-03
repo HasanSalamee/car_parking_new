@@ -65,7 +65,7 @@ class AppRouter {
           );
         }
         return _errorRoute();
-
+/*
       case paymentConfirmation:
         if (args is Map<String, dynamic>) {
           return _slideRoute(
@@ -80,7 +80,7 @@ class AppRouter {
           );
         }
         return _errorRoute();
-
+*/
       case paymentSuccess:
         if (args is TransactionEntity) {
           return _fadeRoute(

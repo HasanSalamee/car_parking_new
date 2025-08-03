@@ -4,8 +4,7 @@ import 'package:car_parking/features/Parking/Presentation/Pages/ParkingSpotCard.
 import 'package:car_parking/features/auth/presentation/pages/login_screen.dart';
 import 'package:car_parking/features/auth/presentation/pages/signuo_screen.dart';
 import 'package:car_parking/features/payment/Domain/entity/transaction_entity.dart';
-import 'package:car_parking/features/payment/presentation/pages/BookingDetailsScreen.dart';
-import 'package:car_parking/features/payment/presentation/pages/PaymentConfirm.dart';
+import 'package:car_parking/features/Parking/Presentation/Pages/BookingDetailsScreen.dart';
 import 'package:car_parking/features/payment/presentation/pages/PaymentScreen.dart';
 import 'package:car_parking/features/payment/presentation/pages/PaymentSuccessScreen.dart';
 import 'package:car_parking/features/payment/presentation/pages/wallet.dart';

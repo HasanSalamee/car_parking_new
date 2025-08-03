@@ -4,7 +4,7 @@ import 'dart:convert';
 import 'package:car_parking/features/Parking/Presentation/Bloc/parking_booking_bloc.dart';
 import 'package:car_parking/features/Parking/Presentation/Bloc/parking_booking_event.dart';
 import 'package:car_parking/features/Parking/Presentation/Bloc/parking_booking_state.dart';
-import 'package:car_parking/features/payment/presentation/pages/BookingDetailsScreen.dart';
+import 'package:car_parking/features/Parking/Presentation/Pages/BookingDetailsScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';

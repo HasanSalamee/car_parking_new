@@ -1,4 +1,5 @@
 import 'package:car_parking/Core/errors/Failure.dart';
+import 'package:car_parking/Core/network/tok.dart';
 import 'package:car_parking/features/Parking/Data/Models/booking_model.dart';
 import 'package:car_parking/features/Parking/Data/Models/garage_model.dart';
 import 'package:car_parking/features/Parking/Domain/Entities/booking_entity.dart';
@@ -49,8 +50,9 @@ abstract class ParkingRemoteDataSource {
 
 class ParkingRemoteDataSourceImpl implements ParkingRemoteDataSource {
   final Dio dio;
+  final HttpHeadersProvider headersProvider;
 
-  ParkingRemoteDataSourceImpl({required this.dio});
+  ParkingRemoteDataSourceImpl(this.dio, this.headersProvider);
 
   @override
   Future<List<GarageEntity>> searchAvailableGarages({
@@ -78,7 +80,7 @@ class ParkingRemoteDataSourceImpl implements ParkingRemoteDataSource {
   Future<List<GarageEntity>> searchAvailableGarages1({
     required DateTime arrivalTime,
     required DateTime departureTime,
-    required String city, 
+    required String city,
   }) async {
     try {
       final response = await dio.get('api/Garage/search', queryParameters: {
@@ -99,7 +101,6 @@ class ParkingRemoteDataSourceImpl implements ParkingRemoteDataSource {
   @override
   Future<BookingModel> createBooking(BookingEntity booking) async {
     try {
-     
       final bookingModel = BookingModel(
         id: booking.id,
         start: booking.start,
@@ -112,9 +113,6 @@ class ParkingRemoteDataSourceImpl implements ParkingRemoteDataSource {
       final response = await dio.post(
         'api/booking/create',
         data: bookingModel.toJson(),
-        options: Options(
-          headers: {'Content-Type': 'application/json'},
-        ),
       );
 
       if (response.statusCode == 201) {
@@ -151,12 +149,12 @@ class ParkingRemoteDataSourceImpl implements ParkingRemoteDataSource {
 
   @override
   Future<List<BookingModel>> getUserBookings() async {
+    final headers = await headersProvider.getAuthHeaders();
+
     try {
       final response = await dio.get(
         'api/Booking/my-bookings',
-        options: Options(
-          headers: {'Content-Type': 'application/json'},
-        ),
+        options: Options(headers: headers),
       );
 
       return (response.data as List)

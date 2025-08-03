@@ -176,7 +176,7 @@ class BookingParkingRepositoryImpl implements ParkingBookingRepository {
   }*/
 //new after update
   @override
-  Future<Either<Failure, List<BookingModel>>> getUserBookings(
+  Future<Either<Failure, List<BookingEntity>>> getUserBookings(
       String userId) async {
     try {
       final bookings = await remoteDataSource.getUserBookings();

@@ -73,7 +73,8 @@ class MyApp extends StatelessWidget {
     );
 
     // booking
-    final bookingRemoteDataSource = ParkingRemoteDataSourceImpl(dio: _dio);
+    final bookingRemoteDataSource =
+        ParkingRemoteDataSourceImpl(_dio, httpHeadersProvider);
     final bookingRepository =
         BookingParkingRepositoryImpl(bookingRemoteDataSource);
 

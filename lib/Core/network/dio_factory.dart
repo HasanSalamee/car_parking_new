@@ -31,16 +31,13 @@ class DioFactory {
 
 */
 
-import 'dart:io';
 import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart';
-import 'package:dio/io.dart';
 
 class DioFactory {
   Future<Dio> createDio() async {
     final dio = Dio();
 
-    dio.options.baseUrl = 'https://f3fb8850a641.ngrok-free.app/';
+    dio.options.baseUrl = 'https://dcd14971e7b7.ngrok-free.app/';
     dio.options.connectTimeout = const Duration(seconds: 5);
     dio.options.receiveTimeout = const Duration(seconds: 5);
     return dio;

@@ -38,22 +38,22 @@ class NfcLocalDatasource {
   }
 
   String _serializeTicket(NfcTicket ticket) {
-    return '${ticket.id}|${ticket.token}|${ticket.bookingId}|'
+    return '${ticket.tokenId}|${ticket.tokenValue}|${ticket.bookingId}|'
         '${ticket.userId}|'
-        '${ticket.validFrom.toIso8601String()}|'
-        '${ticket.validTo.toIso8601String()}|'
+        '${ticket.tokenValidFrom.toIso8601String()}|'
+        '${ticket.tokenValidTo.toIso8601String()}|'
         '${ticket.isUsed}';
   }
 
   NfcTicket _deserializeTicket(String data) {
     final parts = data.split('|');
     return NfcTicket(
-      id: parts[0],
-      token: parts[1],
+      tokenId: parts[0],
+      tokenValue: parts[1],
       bookingId: parts[2],
       userId: parts[3],
-      validFrom: DateTime.parse(parts[4]),
-      validTo: DateTime.parse(parts[5]),
+      tokenValidFrom: DateTime.parse(parts[4]),
+      tokenValidTo: DateTime.parse(parts[5]),
       isUsed: parts[6] == 'true',
     );
   }

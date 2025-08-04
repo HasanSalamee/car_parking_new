@@ -165,12 +165,12 @@ class _PairingScreenState extends State<PairingScreen> {
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 16),
-          Text('رقم التذكرة: ${ticket.id}'),
+          Text('رقم التذكرة: ${ticket.tokenId}'),
           Text('الحجز: ${ticket.bookingId}'),
           Text(
-              'صالح من: ${DateFormat('yyyy-MM-dd HH:mm').format(ticket.validFrom)}'),
+              'صالح من: ${DateFormat('yyyy-MM-dd HH:mm').format(ticket.tokenValidFrom)}'),
           Text(
-              'صالح إلى: ${DateFormat('yyyy-MM-dd HH:mm').format(ticket.validTo)}'),
+              'صالح إلى: ${DateFormat('yyyy-MM-dd HH:mm').format(ticket.tokenValidTo)}'),
           Text('الحالة: ${ticket.isUsed ? "مستخدم" : "غير مستخدم"}'),
           const SizedBox(height: 32),
           Center(

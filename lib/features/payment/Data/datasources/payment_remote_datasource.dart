@@ -49,7 +49,7 @@ class PaymentRemoteDataSourceImpl implements PaymentRemoteDataSource {
     required double amount,
   }) async {
     final response = await dio.post(
-      '/transactions/payment',
+      'api/Payment/confirm',
       data: {
         'userId': userId,
         'bookingId': bookingId,
@@ -186,7 +186,7 @@ class PaymentRemoteDataSourceImpl implements PaymentRemoteDataSource {
       if (endDate != null) queryParams['endDate'] = endDate.toIso8601String();
 
       final response = await dio.get(
-        '/users/transactions',
+        'api/Payment/history/45',
         queryParameters: queryParams.isNotEmpty ? queryParams : null,
         options: Options(
           validateStatus: (status) => status == 200 || status == 204,

@@ -72,10 +72,10 @@ class NfcBloc extends Bloc<NfcEvent, NfcState> {
   }
 
   String _serializeTicket(NfcTicket ticket) {
-    return '${ticket.id}|${ticket.token}|${ticket.bookingId}|'
+    return '${ticket.tokenId}|${ticket.tokenValue}|${ticket.bookingId}|'
         '${ticket.userId}|'
-        '${ticket.validFrom.toIso8601String()}|'
-        '${ticket.validTo.toIso8601String()}|'
+        '${ticket.tokenValidFrom.toIso8601String()}|'
+        '${ticket.tokenValidTo.toIso8601String()}|'
         '${ticket.isUsed}';
   }
 }

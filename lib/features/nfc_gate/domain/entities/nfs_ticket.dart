@@ -1,49 +1,49 @@
 class NfcTicket {
-  final String id;
-  final String token;
-  final String bookingId;
-  final String userId;
-  final DateTime validFrom;
-  final DateTime validTo;
+  final String tokenId;
+  final String tokenValue;
+  String bookingId;
+  String userId;
+  final DateTime tokenValidFrom;
+  final DateTime tokenValidTo;
   bool isUsed;
 
   NfcTicket({
-    required this.id,
-    required this.token,
+    required this.tokenId,
+    required this.tokenValue,
     required this.bookingId,
     required this.userId,
-    required this.validFrom,
-    required this.validTo,
+    required this.tokenValidFrom,
+    required this.tokenValidTo,
     this.isUsed = false,
   });
 
   factory NfcTicket.fromJson(Map<String, dynamic> json) {
     return NfcTicket(
-      id: json['id'] as String,
-      token: json['token'] as String,
+      tokenId: json['tokenId'] as String,
+      tokenValue: json['tokenValue'] as String,
       bookingId: json['bookingId'] as String,
       userId: json['userId'] as String,
-      validFrom: DateTime.parse(json['validFrom'] as String),
-      validTo: DateTime.parse(json['validTo'] as String),
+      tokenValidFrom: DateTime.parse(json['tokenValidFrom'] as String),
+      tokenValidTo: DateTime.parse(json['tokenValidTo'] as String),
       isUsed: json['isUsed'] as bool? ?? false,
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'id': id,
-      'token': token,
+      'id': tokenId,
+      'token': tokenValue,
       'bookingId': bookingId,
       'userId': userId,
-      'validFrom': validFrom.toIso8601String(),
-      'validTo': validTo.toIso8601String(),
+      'validFrom': tokenValidFrom.toIso8601String(),
+      'validTo': tokenValidTo.toIso8601String(),
       'isUsed': isUsed,
     };
   }
 
   bool get isValid {
     final now = DateTime.now();
-    return now.isAfter(validFrom) && now.isBefore(validTo) && !isUsed;
+    return now.isAfter(tokenValidFrom) && now.isBefore(tokenValidTo) && !isUsed;
   }
 
   void markAsUsed() => isUsed = true;

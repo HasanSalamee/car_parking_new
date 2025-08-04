@@ -137,12 +137,12 @@ class NfcRepositoryImpl implements NfcRepository {
         return const Right(false);
       }
 
-      final isValid = await remoteDatasource.validateTicket(ticket.id);
+      final isValid = await remoteDatasource.validateTicket(ticket.tokenId);
 
       if (isValid) {
         ticket.markAsUsed();
         await localDatasource.cacheTicket(ticket);
-        await remoteDatasource.reportTicketUsage(ticket.id);
+        await remoteDatasource.reportTicketUsage(ticket.tokenId);
       }
 
       return Right(isValid);
@@ -185,10 +185,10 @@ class NfcRepositoryImpl implements NfcRepository {
   }
 
   String _serializeTicket(NfcTicket ticket) {
-    return '${ticket.id}|${ticket.token}|${ticket.bookingId}|'
+    return '${ticket.tokenId}|${ticket.tokenValue}|${ticket.bookingId}|'
         '${ticket.userId}|'
-        '${ticket.validFrom.toIso8601String()}|'
-        '${ticket.validTo.toIso8601String()}|'
+        '${ticket.tokenValidFrom.toIso8601String()}|'
+        '${ticket.tokenValidTo.toIso8601String()}|'
         '${ticket.isUsed}';
   }
 }

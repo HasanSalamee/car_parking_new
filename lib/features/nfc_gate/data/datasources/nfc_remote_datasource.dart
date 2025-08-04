@@ -68,12 +68,12 @@ class NfcRemoteDatasource {
 
   NfcTicket _parseTicketResponse(Map<String, dynamic> data) {
     return NfcTicket(
-      id: data['id'],
-      token: data['token'],
+      tokenId: data['id'],
+      tokenValue: data['token'],
       bookingId: data['booking_id'],
       userId: data['user_id'],
-      validFrom: DateTime.parse(data['valid_from'] as String),
-      validTo: DateTime.parse(data['valid_to'] as String),
+      tokenValidFrom: DateTime.parse(data['valid_from'] as String),
+      tokenValidTo: DateTime.parse(data['valid_to'] as String),
       isUsed: data['is_used'] ?? false,
     );
   }

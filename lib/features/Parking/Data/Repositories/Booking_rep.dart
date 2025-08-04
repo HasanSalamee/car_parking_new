@@ -187,7 +187,7 @@ class BookingParkingRepositoryImpl implements ParkingBookingRepository {
       String userId) async {
     try {
       final bookings = await remoteDataSource.getUserBookings();
-
+            print(bookings);
       final now = DateTime.now();
       final startOfToday = DateTime(now.year, now.month, now.day);
       final endOfToday =
@@ -201,6 +201,7 @@ class BookingParkingRepositoryImpl implements ParkingBookingRepository {
 
         return isActive || endedToday;
       }).toList();
+      print(bookings);
 
       return Right(filteredBookings);
     } on SocketException {

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>محاكاة قارئ NFC</title>
+  <style>
+    body { font-family: sans-serif; text-align: center; padding: 40px; direction: rtl; }
+    button { padding: 10px 20px; font-size: 18px; }
+    #nfc-data, #verification-result { margin-top: 20px; font-size: 20px; }
+  </style>
+</head>
+<body>
+
+  <h1>قارئ NFC</h1>
+  <button id="scan-btn">ابدأ القراءة</button>
+
+  <div id="nfc-data">البيانات المقروءة ستظهر هنا</div>
+  <div id="verification-result"></div>
+
+  <script>
+    const scanBtn = document.getElementById("scan-btn");
+    const nfcDataDiv = document.getElementById("nfc-data");
+    const resultDiv = document.getElementById("verification-result");
+
+    scanBtn.addEventListener("click", async () => {
+      if ("NDEFReader" in window) {
+        try {
+          const ndef = new NDEFReader();
+          await ndef.scan();
+
+          nfcDataDiv.textContent = "بانتظار تمرير البطاقة...";
+
+          ndef.onreading = async (event) => {
+            const decoder = new TextDecoder();
+            for (const record of event.message.records) {
+              const text = decoder.decode(record.data);
+              nfcDataDiv.textContent = `تمت قراءة: ${text}`;
+
+              // إرسال التوكن للسيرفر للتحقق
+              const response = await fetch("/api/validate", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ token: text }),
+              });
+
+              const result = await response.json();
+              if (result.status === "valid") {
+                resul
+                tDiv.textContent = "✅ الحجز صالح - مرحبًا بك!";
+              } else {
+                resultDiv.textContent = "❌ الحجز غير صالح";
+              }
+            }
+          };
+        } catch (error) {
+          nfcDataDiv.textContent = "خطأ أثناء تشغيل NFC: " + error;
+        }
+      } else {
+        alert("جهازك لا يدعم Web NFC أو يجب استخدام Chrome على Android.");
+      }
+    });
+  </script>
+
+</body>
+</html>

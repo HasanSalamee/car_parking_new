@@ -100,6 +100,7 @@ class ParkingRemoteDataSourceImpl implements ParkingRemoteDataSource {
 
   @override
   Future<BookingModel> createBooking(BookingEntity booking) async {
+          final headers = await headersProvider.getAuthHeaders();
     try {
       final bookingModel = BookingModel(
         id: booking.id,
@@ -112,7 +113,10 @@ class ParkingRemoteDataSourceImpl implements ParkingRemoteDataSource {
 
       final response = await dio.post(
         'api/booking/create',
+        
         data: bookingModel.toJson(),
+            options: Options(headers: headers),
+
       );
 
       if (response.statusCode == 201) {
@@ -130,11 +134,13 @@ class ParkingRemoteDataSourceImpl implements ParkingRemoteDataSource {
 
   @override
   Future<void> cancelBooking(String bookingId) async {
+            final headers = await headersProvider.getAuthHeaders();
     try {
       final response = await dio.delete(
-        'api/booking/cancel/$bookingId',
+        'api/booking/cancel/',
         options: Options(
-          headers: {'Content-Type': 'application/json'},
+          headers:headers,
+          
           validateStatus: (status) => status == 200 || status == 404,
         ),
       );

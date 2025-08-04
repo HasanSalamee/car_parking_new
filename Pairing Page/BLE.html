@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>محاكاة قارئ Bluetooth</title>
+  <style>
+    body { font-family: sans-serif; text-align: center; padding: 40px; direction: rtl; }
+    button { padding: 10px 20px; font-size: 18px; }
+    #bluetooth-data, #verification-result { margin-top: 20px; font-size: 20px; }
+  </style>
+</head>
+<body>
+
+  <h1>قارئ Bluetooth</h1>
+  <button id="connect-btn">ابدأ الاتصال</button>
+
+  <div id="bluetooth-data">بانتظار استقبال البيانات عبر Bluetooth...</div>
+  <div id="verification-result"></div>
+
+  <script>
+    const connectBtn = document.getElementById("connect-btn");
+    const dataDiv = document.getElementById("bluetooth-data");
+    const resultDiv = document.getElementById("verification-result");
+
+    connectBtn.addEventListener("click", async () => {
+      try {
+        const device = await navigator.bluetooth.requestDevice({
+          acceptAllDevices: true,
+          optionalServices: ['0000ffe0-0000-1000-8000-00805f9b34fb'] // UUID مثال شائع
+        });
+
+        const server = await device.gatt.connect();
+        const service = await server.getPrimaryService('0000ffe0-0000-1000-8000-00805f9b34fb');
+        const characteristic = await service.getCharacteristic('0000ffe1-0000-1000-8000-00805f9b34fb');
+
+        await characteristic.startNotifications();
+
+        dataDiv.textContent = "📡 في انتظار إرسال التذكرة...";
+
+        characteristic.addEventListener('characteristicvaluechanged', async (event) => {
+          const value = new TextDecoder().decode(event.target.value);
+          dataDiv.textContent = `📥 التذكرة المستلمة: ${value}`;
+
+          // إرسال التوكن إلى السيرفر للتحقق من الحجز
+          const response = await fetch("/api/validate", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ token: value })
+          });
+
+          const result = await response.json();
+          if (result.status === "valid") {
+            resultDiv.textContent = "✅ الحجز صالح - مرحبًا بك!";
+          } else {
+            resultDiv.textContent = "❌ الحجز غير صالح";
+          }
+        });
+
+        alert("🔗 تم الاتصال بنجاح بالجهاز، في انتظار التذكرة...");
+      } catch (error) {
+        dataDiv.textContent = "❌ فشل الاتصال: " + error;
+      }
+    });
+  </script>
+
+</body>
+</html>

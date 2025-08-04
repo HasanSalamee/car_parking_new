@@ -1,4 +1,5 @@
 import 'package:car_parking/Core/errors/Failure.dart';
+import 'package:car_parking/features/Parking/Data/Models/booking_model.dart';
 import 'package:car_parking/features/Parking/Domain/Entities/booking_entity.dart';
 import 'package:car_parking/features/Parking/Domain/Entities/garage_entity.dart';
 import 'package:dartz/dartz.dart';
@@ -18,8 +19,9 @@ abstract class ParkingBookingRepository {
   });
 
   // إنشاء حجز جديد مع توليد التوكن
-  Future<Either<Failure, BookingEntity>> createBooking(BookingEntity booking);
+  // Future<Either<Failure, BookingEntity>> createBooking(BookingEntity booking);
 
+  Future<Either<Failure, BookingModel>> createBooking(BookingModel booking);
   // التحقق من توفر الموقف (مثال)
   Future<bool> checkAvailability({
     required String garageId,

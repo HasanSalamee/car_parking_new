@@ -65,8 +65,8 @@ class PaymentSuccessScreen extends StatelessWidget {
                   context,
                   AppRouter.home,
                   (route) => false,
-                  arguments: transaction
-                      .booking.userId, // تمرير userId من BookingEntity
+                  arguments:
+                      transaction.userId, // تمرير userId من BookingEntity
                 );
               },
               child: const Text('العودة للرئيسية'),

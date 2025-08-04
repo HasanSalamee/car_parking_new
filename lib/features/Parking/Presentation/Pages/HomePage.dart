@@ -44,9 +44,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   _isLoadingUser = false;
                 });
                 // جلب حجوزات المستخدم بمجرد الحصول على الـ user ID
-                context.read<ParkingBookingBloc>().add(GetUserBookingsEvent(
+                /* context.read<ParkingBookingBloc>().add(GetUserBookingsEvent(
                     userId:
-                        "d778efd8-a33c-4206-ad6d-bc1621f9a835" /* user.id*/));
+                         user.id));*/
               } else {
                 print('بيانات المصادقة ليست من نوع UserEntity');
                 setState(() => _isLoadingUser = false);

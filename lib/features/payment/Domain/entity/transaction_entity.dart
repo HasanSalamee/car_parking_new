@@ -10,7 +10,7 @@ class TransactionEntity extends Equatable {
   final String status;
   final DateTime createdAt;
   final String walletId;
-  final BookingEntity booking;
+  final String userId;
   final NfcTicket nfcTicket;
 
   const TransactionEntity({
@@ -20,11 +20,11 @@ class TransactionEntity extends Equatable {
     required this.status,
     required this.createdAt,
     required this.walletId,
-    required this.booking,
+    required this.userId,
     required this.nfcTicket,
   });
 
   @override
   List<Object> get props =>
-      [id, amount, type, status, walletId, booking, createdAt];
+      [id, amount, type, status, walletId, userId, createdAt];
 }

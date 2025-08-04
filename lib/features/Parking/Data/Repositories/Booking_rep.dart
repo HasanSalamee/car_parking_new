@@ -58,7 +58,7 @@ class BookingParkingRepositoryImpl implements ParkingBookingRepository {
       return Left(UnknownFailure());
     }
   }
-
+/*
 //Not Used
   @override
   Future<Either<Failure, BookingEntity>> createBooking(
@@ -66,6 +66,23 @@ class BookingParkingRepositoryImpl implements ParkingBookingRepository {
     try {
       final createdBooking = await remoteDataSource.createBooking(booking);
       return Right(createdBooking.toEntity());
+    } on SocketException {
+      return Left(NetworkFailure(message1: 'فشل الاتصال بالانترنت'));
+    } on HttpException catch (e) {
+      return Left(ServerFailure(e.message));
+    } catch (e) {
+      return Left(UnknownFailure());
+    }
+  }
+  */
+
+  @override
+  Future<Either<Failure, BookingModel>> createBooking(
+      BookingModel booking) async {
+    print(booking);
+    try {
+      final createdBooking = await remoteDataSource.createBooking(booking);
+      return Right(createdBooking);
     } on SocketException {
       return Left(NetworkFailure(message1: 'فشل الاتصال بالانترنت'));
     } on HttpException catch (e) {
@@ -187,7 +204,7 @@ class BookingParkingRepositoryImpl implements ParkingBookingRepository {
       String userId) async {
     try {
       final bookings = await remoteDataSource.getUserBookings();
-            print(bookings);
+      print(bookings);
       final now = DateTime.now();
       final startOfToday = DateTime(now.year, now.month, now.day);
       final endOfToday =

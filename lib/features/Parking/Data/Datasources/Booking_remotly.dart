@@ -18,8 +18,15 @@ abstract class ParkingRemoteDataSource {
     required DateTime departureTime,
     required String city,
   });
-
+/*
   Future<BookingModel> createBooking(BookingEntity booking);
+  Future<bool> checkAvailability({
+    required String garageId,
+    required DateTime startTime,
+    required DateTime endTime,
+  });
+  */
+  Future<BookingModel> createBooking(BookingModel booking);
   Future<bool> checkAvailability({
     required String garageId,
     required DateTime startTime,
@@ -97,27 +104,63 @@ class ParkingRemoteDataSourceImpl implements ParkingRemoteDataSource {
       throw ServerException.fromDioError(e);
     }
   }
-
+/*
   @override
   Future<BookingModel> createBooking(BookingEntity booking) async {
-          final headers = await headersProvider.getAuthHeaders();
+    final headers = await headersProvider.getAuthHeaders();
+
     try {
-      final bookingModel = BookingModel(
-        id: booking.id,
-        start: booking.start,
-        end: booking.end,
-        status: booking.status,
-        userId: booking.userId,
-        garageId: booking.garageId,
-      );
-
       final response = await dio.post(
-        'api/booking/create',
-        
-        data: bookingModel.toJson(),
-            options: Options(headers: headers),
-
+        'api/Booking/create',
+        data: BookingModel(
+          id: booking.id,
+          start: booking.start,
+          end: booking.end,
+          status: booking.status,
+          userId: booking.userId,
+          garageId: booking.garageId,
+        ).toJson(),
+        options: Options(
+          headers: headers,
+          contentType: Headers.jsonContentType,
+        ),
       );
+      print("HI we in create Api");
+
+      if (response.statusCode == 201) {
+        return BookingModel.fromJson(response.data);
+      } else {
+        throw ServerException(
+          message: 'Failed to create booking: ${response.statusCode}',
+          statusCode: response.statusCode,
+        );
+      }
+    } on DioException catch (e) {
+      throw ServerException.fromDioError(e);
+    }
+  }
+*/
+
+  @override
+  Future<BookingModel> createBooking(BookingModel booking) async {
+    final headers = await headersProvider.getAuthHeaders();
+
+    print("inAPi $booking");
+    print("inAPi");
+    try {
+      final response = await dio.post(
+        'api/Booking/create',
+        data: {
+          'bookingId': booking.id,
+          'startTime':
+              booking.start.toIso8601String(), // تحويل DateTime لسلسلة نصية
+          'endTime': booking.end.toIso8601String(),
+          'userId': booking.userId,
+          'garageId': booking.garageId,
+        },
+        options: Options(headers: headers),
+      );
+      print("HI we in create Api");
 
       if (response.statusCode == 201) {
         return BookingModel.fromJson(response.data);
@@ -134,13 +177,12 @@ class ParkingRemoteDataSourceImpl implements ParkingRemoteDataSource {
 
   @override
   Future<void> cancelBooking(String bookingId) async {
-            final headers = await headersProvider.getAuthHeaders();
+    final headers = await headersProvider.getAuthHeaders();
     try {
       final response = await dio.delete(
         'api/booking/cancel/',
         options: Options(
-          headers:headers,
-          
+          headers: headers,
           validateStatus: (status) => status == 200 || status == 404,
         ),
       );

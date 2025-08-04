@@ -54,7 +54,6 @@ class PaymentRemoteDataSourceImpl implements PaymentRemoteDataSource {
         'userId': userId,
         'bookingId': bookingId,
         'amount': amount,
-        'type': 'payment',
       },
     );
 

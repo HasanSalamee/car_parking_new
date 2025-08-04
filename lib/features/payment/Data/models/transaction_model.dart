@@ -10,11 +10,10 @@ class TransactionModel extends TransactionEntity {
     required super.status,
     required super.createdAt,
     required super.walletId,
-    required BookingModel booking,
+    required String userId,
     required super.nfcTicket,
   }) : super(
-            booking:
-                booking); // نمرر الـ BookingModel لأنه يمتد من BookingEntity
+            userId: userId); // نمرر الـ BookingModel لأنه يمتد من BookingEntity
 
   factory TransactionModel.fromJson(Map<String, dynamic> json) {
     return TransactionModel(
@@ -24,7 +23,7 @@ class TransactionModel extends TransactionEntity {
         status: json['status'] as String,
         createdAt: DateTime.parse(json['createdAt']),
         walletId: json['walletId'] as String,
-        booking: BookingModel.fromJson(json['booking']),
+        userId: json['userId'] as String,
         nfcTicket: NfcTicket.fromJson(json['nfcTicket']));
   }
 
@@ -36,7 +35,7 @@ class TransactionModel extends TransactionEntity {
       'status': status,
       'createdAt': createdAt.toIso8601String(),
       'walletId': walletId,
-      'booking': (booking as BookingModel).toJson(), 
+      'bookingId': userId,
       'nfcTicket': (nfcTicket as NfcTicket).toJson(),
     };
   }
@@ -49,7 +48,7 @@ class TransactionModel extends TransactionEntity {
         status: status,
         createdAt: createdAt,
         walletId: walletId,
-        booking: booking,
+        userId: userId,
         nfcTicket: nfcTicket);
   }
 }

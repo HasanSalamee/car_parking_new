@@ -7,7 +7,7 @@ import 'package:car_parking/features/Parking/Presentation/Bloc/parking_booking_e
 import 'package:car_parking/features/Parking/Presentation/Bloc/parking_booking_state.dart';
 import 'package:car_parking/features/auth/Domain/Entities/user_entity.dart';
 import 'package:car_parking/features/auth/Presentation/Bloc/auth_bloc.dart';
-import 'package:car_parking/features/auth/Presentation/Bloc/auth_event.dart'; // تأكد من استيراد الأحداث
+import 'package:car_parking/features/auth/Presentation/Bloc/auth_event.dart';
 import 'package:car_parking/features/auth/Presentation/Bloc/auth_state.dart';
 import 'package:intl/intl.dart';
 
@@ -25,7 +25,6 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    // إرسال حدث للحصول على المستخدم الحالي
     context.read<AuthBloc>().add(GetCurrentUserEvent());
   }
 
@@ -33,7 +32,6 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return MultiBlocListener(
       listeners: [
-        // الاستماع لتغيرات حالة المصادقة
         BlocListener<AuthBloc, AuthState>(
           listener: (context, authState) {
             if (authState is AuthSuccess) {
@@ -44,24 +42,22 @@ class _HomeScreenState extends State<HomeScreen> {
                   _isLoadingUser = false;
                 });
                 // جلب حجوزات المستخدم بمجرد الحصول على الـ user ID
-                /* context.read<ParkingBookingBloc>().add(GetUserBookingsEvent(
-                    userId:
-                         user.id));*/
+                // context
+                //.read<ParkingBookingBloc>()
+                //       .add(GetUserBookingsEvent(userId: user.id));
               } else {
-                print('بيانات المصادقة ليست من نوع UserEntity');
                 setState(() => _isLoadingUser = false);
               }
             } else if (authState is AuthFailure) {
               setState(() => _isLoadingUser = false);
               Future.microtask(() {
-                //  Navigator.pushReplacementNamed(context, '/login');
+                // Navigator.pushReplacementNamed(context, '/login');
               });
             } else if (authState is AuthLoading) {
               setState(() => _isLoadingUser = true);
             }
           },
         ),
-
         BlocListener<ParkingBookingBloc, ParkingBookingState>(
           listener: (context, bookingState) {},
         ),
@@ -70,14 +66,11 @@ class _HomeScreenState extends State<HomeScreen> {
         appBar: AppBar(
           title: const Text(
             'مرحبًا بك في مواقف السيارات',
-            style:
-                TextStyle(fontWeight: FontWeight.bold, fontSize: 18, shadows: [
-              Shadow(
-                blurRadius: 2.0,
-                color: Colors.black12,
-                offset: Offset(1.0, 1.0),
-              )
-            ]),
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 18,
+              color: Colors.white,
+            ),
           ),
           centerTitle: true,
           actions: [
@@ -137,7 +130,12 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
           child: _isLoadingUser
-              ? const Center(child: CircularProgressIndicator())
+              ? const Center(
+                  child: CircularProgressIndicator(
+                    strokeWidth: 3,
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
+                  ),
+                )
               : Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: Column(
@@ -203,11 +201,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                   ),
                                   child: InkWell(
                                     onTap: () {
-                                      // … بالسطر الآتي:
                                       Navigator.pushNamed(
                                         context,
                                         AppRouter.search,
-                                        arguments: _userId, // ✅ يمرِّر userId
+                                        arguments: _userId,
                                       );
                                     },
                                     borderRadius: BorderRadius.circular(12),
@@ -303,42 +300,53 @@ class _HomeScreenState extends State<HomeScreen> {
                                 child: Column(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    Icon(Icons.error_outline,
-                                        color: Colors.red.shade700, size: 48),
-                                    const SizedBox(height: 16),
-                                    Text(
-                                      'حدث خطأ: ${state.error}',
-                                      style: TextStyle(
-                                          color: Colors.red.shade700,
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w500),
-                                      textAlign: TextAlign.center,
+                                    Container(
+                                      padding: const EdgeInsets.all(16),
+                                      decoration: BoxDecoration(
+                                        color: Colors.red.shade50,
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: Icon(Icons.error_outline,
+                                          size: 60, color: Colors.red.shade700),
                                     ),
                                     const SizedBox(height: 20),
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 20),
+                                      child: Text(
+                                        state.error,
+                                        style: TextStyle(
+                                          fontSize: 17,
+                                          color: Colors.red.shade700,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 25),
                                     ElevatedButton(
                                       onPressed: () {
                                         if (_userId != null) {
                                           context
                                               .read<ParkingBookingBloc>()
-                                              .add(GetUserBookingsEvent(
-                                                  userId: /*_userId!*/
-                                                      "d778efd8-a33c-4206-ad6d-bc1621f9a835"));
+                                              .add(
+                                                GetUserBookingsEvent(
+                                                    userId: _userId!),
+                                              );
                                         }
                                       },
                                       style: ElevatedButton.styleFrom(
-                                        backgroundColor: Colors.indigo,
+                                        backgroundColor: Colors.red,
+                                        foregroundColor: Colors.white,
                                         padding: const EdgeInsets.symmetric(
-                                            horizontal: 24, vertical: 12),
+                                            horizontal: 30, vertical: 15),
                                         shape: RoundedRectangleBorder(
                                           borderRadius:
-                                              BorderRadius.circular(10),
+                                              BorderRadius.circular(15),
                                         ),
-                                        elevation: 3,
-                                        shadowColor: Colors.indigo.shade300,
                                       ),
-                                      child: const Text('إعادة المحاولة',
-                                          style:
-                                              TextStyle(color: Colors.white)),
+                                      child: const Text("إعادة المحاولة",
+                                          style: TextStyle(fontSize: 16)),
                                     ),
                                   ],
                                 ),
@@ -362,8 +370,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return AnimatedContainer(
       duration: Duration(milliseconds: 300 + (index * 100)),
       curve: Curves.easeOut,
-      transform: Matrix4.translationValues(0, index == 0 ? 0 : 20, 0)
-        ..scale(1.0),
+      transform: Matrix4.translationValues(0, index == 0 ? 0 : 20, 0),
       child: Card(
         elevation: 5,
         margin: EdgeInsets.zero,
@@ -388,45 +395,67 @@ class _HomeScreenState extends State<HomeScreen> {
                 Row(
                   children: [
                     Container(
-                      padding: const EdgeInsets.all(6),
+                      width: 60,
+                      height: 60,
                       decoration: BoxDecoration(
-                        color: Colors.blue.shade100,
-                        shape: BoxShape.circle,
+                        color: Colors.blue.shade50,
+                        borderRadius: BorderRadius.circular(15),
                       ),
-                      child: const Icon(Icons.local_parking,
-                          size: 24, color: Colors.blue),
+                      child: const Icon(
+                        Icons.local_parking,
+                        color: Colors.blue,
+                        size: 36,
+                      ),
                     ),
-                    const SizedBox(width: 12),
+                    const SizedBox(width: 16),
                     Expanded(
-                      child: Text(
-                        'موقف: ${booking.garageId ?? "غير محدد"}',
-                        style: const TextStyle(
-                          fontSize: 17,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.indigo,
-                        ),
-                        overflow: TextOverflow.ellipsis,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'موقف: ${booking.garageId ?? "غير محدد"}',
+                            style: const TextStyle(
+                              fontSize: 17,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.indigo,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 8),
+                          Row(
+                            children: [
+                              const Icon(Icons.calendar_today,
+                                  size: 16, color: Colors.grey),
+                              const SizedBox(width: 6),
+                              Text(
+                                'من: ${DateFormat('yyyy/MM/dd - hh:mm a').format(booking.start)}',
+                                style: const TextStyle(
+                                    fontSize: 14, color: Colors.grey),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 5),
+                          Row(
+                            children: [
+                              const Icon(Icons.calendar_today,
+                                  size: 16, color: Colors.grey),
+                              const SizedBox(width: 6),
+                              Text(
+                                'إلى: ${DateFormat('yyyy/MM/dd - hh:mm a').format(booking.end)}',
+                                style: const TextStyle(
+                                    fontSize: 14, color: Colors.grey),
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 15),
-                _buildBookingDetailRow(
-                  icon: Icons.calendar_today,
-                  text:
-                      'من: ${DateFormat('yyyy/MM/dd - hh:mm a').format(booking.start)}',
-                ),
-                const SizedBox(height: 8),
-                _buildBookingDetailRow(
-                  icon: Icons.calendar_today,
-                  text:
-                      'إلى: ${DateFormat('yyyy/MM/dd - hh:mm a').format(booking.end)}',
-                ),
                 const SizedBox(height: 16),
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    // زر إلغاء الحجز
                     _buildActionButton(
                       text: 'إلغاء الحجز',
                       icon: Icons.cancel,
@@ -437,15 +466,11 @@ class _HomeScreenState extends State<HomeScreen> {
                             .add(CancelBookingEvent(bookingId: booking.id!));
                       },
                     ),
-                    const SizedBox(width: 12),
-                    // زر تمديد الحجز
                     _buildActionButton(
                       text: 'تمديد الحجز',
                       icon: Icons.timer,
                       color: Colors.green,
-                      onPressed: () {
-                        // وظيفة التمديد
-                      },
+                      onPressed: () {},
                     ),
                   ],
                 ),
@@ -454,21 +479,6 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
       ),
-    );
-  }
-
-  // صف تفاصيل الحجز
-  Widget _buildBookingDetailRow(
-      {required IconData icon, required String text}) {
-    return Row(
-      children: [
-        Icon(icon, size: 20, color: Colors.grey.shade600),
-        const SizedBox(width: 10),
-        Text(
-          text,
-          style: TextStyle(fontSize: 15, color: Colors.grey.shade800),
-        ),
-      ],
     );
   }
 

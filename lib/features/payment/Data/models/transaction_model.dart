@@ -17,16 +17,30 @@ class TransactionModel extends TransactionEntity {
 
   factory TransactionModel.fromJson(Map<String, dynamic> json) {
     return TransactionModel(
-        id: json['id'] as String,
-        amount: (json['amount'] as num).toDouble(),
-        type: json['type'] as String,
-        status: json['status'] as String,
-        createdAt: DateTime.parse(json['createdAt']),
-        walletId: json['walletId'] as String,
-        userId: json['userId'] as String,
-        nfcTicket: NfcTicket.fromJson(json['nfcTicket']));
+      id: json['id']?.toString() ?? '', // مطلوب
+      amount: (json['amount'] as num?)?.toDouble() ?? 0.0, // مطلوب
+      type: json['type']?.toString() ?? 'payment',
+      status: json['status']?.toString() ?? 'pending',
+      createdAt: json['createdAt'] != null
+          ? DateTime.parse(json['createdAt'].toString())
+          : DateTime.now(),
+      walletId: json['walletId']?.toString() ?? '',
+      userId: json['userId']?.toString() ?? '',
+      nfcTicket: NfcTicket(
+        tokenId: json['tokenId']?.toString() ?? '',
+        tokenValue: json['tokenValue']?.toString() ?? '',
+        bookingId: json['bookingId']?.toString() ?? '',
+        userId: json['userId']?.toString() ?? '',
+        tokenValidFrom: json['tokenValidFrom'] != null
+            ? DateTime.parse(json['tokenValidFrom'].toString())
+            : DateTime.now(),
+        tokenValidTo: json['tokenValidTo'] != null
+            ? DateTime.parse(json['tokenValidTo'].toString())
+            : DateTime.now().add(Duration(hours: 1)),
+        isUsed: json['isUsed'] as bool? ?? false,
+      ),
+    );
   }
-
   Map<String, dynamic> toJson() {
     return {
       'id': id,

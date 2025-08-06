@@ -46,12 +46,11 @@ class PaymentScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-
               _buildPaymentMethodCard(
                 context,
                 'بطاقة الائتمان',
                 Icons.credit_card,
-                Colors.grey, 
+                Colors.grey,
                 'credit_card',
               ),
               _buildPaymentMethodCard(
@@ -65,7 +64,7 @@ class PaymentScreen extends StatelessWidget {
                 context,
                 'نقداً عند الوصول',
                 Icons.money,
-                Colors.grey, 
+                Colors.grey,
                 'cash',
               ),
               const Spacer(),

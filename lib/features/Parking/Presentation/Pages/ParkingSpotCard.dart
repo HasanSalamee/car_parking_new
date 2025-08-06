@@ -6,13 +6,242 @@ import 'package:car_parking/features/Parking/Presentation/Bloc/parking_booking_e
 import 'package:car_parking/features/Parking/Presentation/Bloc/parking_booking_state.dart';
 import 'package:car_parking/features/Parking/Presentation/Pages/BookingDetailsScreen.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as dio;
 import 'package:intl/intl.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart' as latlong;
+
+class LocationPickerScreen extends StatefulWidget {
+  final latlong.LatLng? initialLocation;
+
+  const LocationPickerScreen({Key? key, this.initialLocation})
+      : super(key: key);
+
+  @override
+  _LocationPickerScreenState createState() => _LocationPickerScreenState();
+}
+
+class _LocationPickerScreenState extends State<LocationPickerScreen> {
+  late MapController _mapController;
+  latlong.LatLng? _selectedLocation;
+  final TextEditingController _searchController = TextEditingController();
+  bool _isSearching = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _mapController = MapController();
+    _selectedLocation = widget.initialLocation;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('اختر موقعًا'),
+        centerTitle: true,
+        backgroundColor: Colors.blue.shade700,
+      ),
+      body: Stack(
+        children: [
+          FlutterMap(
+            mapController: _mapController,
+            options: MapOptions(
+              center:
+                  _selectedLocation ?? const latlong.LatLng(24.7136, 46.6753),
+              zoom: 12.0,
+              onTap: (tapPosition, point) {
+                setState(() {
+                  _selectedLocation = point;
+                });
+              },
+            ),
+            children: [
+              TileLayer(
+                urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                userAgentPackageName: 'com.example.car_parking',
+              ),
+              MarkerLayer(
+                markers: _selectedLocation != null
+                    ? [
+                        Marker(
+                          point: _selectedLocation!,
+                          width: 50,
+                          height: 50,
+                          builder: (ctx) => const Icon(
+                            Icons.location_pin,
+                            color: Colors.red,
+                            size: 40,
+                          ),
+                        ),
+                      ]
+                    : [],
+              ),
+            ],
+          ),
+          Positioned(
+            top: 20,
+            left: 20,
+            right: 20,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(30),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.2),
+                    blurRadius: 10,
+                    offset: const Offset(0, 5),
+                  ),
+                ],
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _searchController,
+                      decoration: InputDecoration(
+                        hintText: 'ابحث عن عنوان...',
+                        border: InputBorder.none,
+                        suffixIcon: IconButton(
+                          icon: const Icon(Icons.search),
+                          onPressed: _searchLocation,
+                        ),
+                      ),
+                      onSubmitted: (value) => _searchLocation(),
+                    ),
+                  ),
+                  if (_isSearching)
+                    const Padding(
+                      padding: EdgeInsets.all(8.0),
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
+                ],
+              ),
+            ),
+          ),
+          Positioned(
+            bottom: 30,
+            left: 0,
+            right: 0,
+            child: Center(
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  if (_selectedLocation != null) {
+                    Navigator.pop(context, _selectedLocation);
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text("يرجى تحديد موقع على الخريطة"),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                  }
+                },
+                icon: const Icon(Icons.check),
+                label:
+                    const Text('تأكيد الموقع', style: TextStyle(fontSize: 16)),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue,
+                  foregroundColor: Colors.white,
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _getCurrentLocation,
+        backgroundColor: Colors.blue,
+        child: const Icon(Icons.my_location, color: Colors.white),
+      ),
+    );
+  }
+
+  Future<void> _searchLocation() async {
+    if (_searchController.text.isEmpty) return;
+
+    setState(() => _isSearching = true);
+
+    try {
+      List<Location> locations =
+          await locationFromAddress(_searchController.text);
+      if (locations.isNotEmpty) {
+        latlong.LatLng newLocation =
+            latlong.LatLng(locations.first.latitude, locations.first.longitude);
+        setState(() {
+          _selectedLocation = newLocation;
+        });
+        _mapController.move(newLocation, 15);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('لم يتم العثور على العنوان')),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('حدث خطأ أثناء البحث: ${e.toString()}')),
+      );
+    } finally {
+      setState(() => _isSearching = false);
+    }
+  }
+
+  Future<void> _getCurrentLocation() async {
+    try {
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('خدمة الموقع غير مفعلة')),
+        );
+        return;
+      }
+
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('تم رفض إذن الموقع')),
+          );
+          return;
+        }
+      }
+
+      if (permission == LocationPermission.deniedForever) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('يجب تفعيل إذن الموقع من الإعدادات')),
+        );
+        return;
+      }
+
+      Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.best,
+      );
+
+      latlong.LatLng currentLocation =
+          latlong.LatLng(position.latitude, position.longitude);
+      setState(() {
+        _selectedLocation = currentLocation;
+      });
+      _mapController.move(currentLocation, 15);
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+            content: Text('فشل الحصول على الموقع الحالي: ${e.toString()}')),
+      );
+    }
+  }
+}
 
 class SearchGaragesScreen extends StatefulWidget {
   final String userId;
@@ -26,11 +255,11 @@ class SearchGaragesScreen extends StatefulWidget {
 class _SearchGaragesScreenState extends State<SearchGaragesScreen> {
   DateTime? arrivalTime;
   DateTime? departureTime;
-  LatLng userLocation = const LatLng(0, 0);
+  latlong.LatLng? _selectedLocation;
+  String? _selectedCity;
   bool _isLocationLoading = false;
   String? _locationError;
-  String? _currentCity;
-  final Map<LatLng, String> _addressCache = {};
+  final Map<latlong.LatLng, String> _addressCache = {};
 
   @override
   void initState() {
@@ -42,16 +271,43 @@ class _SearchGaragesScreenState extends State<SearchGaragesScreen> {
     setState(() {
       _isLocationLoading = true;
       _locationError = null;
-      _currentCity = null;
+      _selectedCity = null;
     });
 
     try {
-      // جلب الإحداثيات
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        setState(() {
+          _locationError = "خدمة الموقع غير مفعلة";
+          _isLocationLoading = false;
+        });
+        return;
+      }
+
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {
+          setState(() {
+            _locationError = "تم رفض إذن الموقع";
+            _isLocationLoading = false;
+          });
+          return;
+        }
+      }
+
+      if (permission == LocationPermission.deniedForever) {
+        setState(() {
+          _locationError = "يجب تفعيل إذن الموقع من الإعدادات";
+          _isLocationLoading = false;
+        });
+        return;
+      }
+
       Position position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.best,
       ).timeout(const Duration(seconds: 15));
 
-      // محاولة التحويل مع حلول بديلة
       await _convertCoordinatesWithFallback(
           position.latitude, position.longitude);
     } on TimeoutException {
@@ -66,7 +322,6 @@ class _SearchGaragesScreenState extends State<SearchGaragesScreen> {
 
   Future<void> _convertCoordinatesWithFallback(double lat, double lng) async {
     try {
-      // المحاولة الأولى: استخدام geocoding
       List<Placemark> placemarks =
           await placemarkFromCoordinates(lat, lng, localeIdentifier: 'ar')
               .timeout(const Duration(seconds: 10));
@@ -80,7 +335,6 @@ class _SearchGaragesScreenState extends State<SearchGaragesScreen> {
     }
 
     try {
-      // المحاولة الثانية: استخدام OpenStreetMap API
       final response = await dio.get(
         Uri.parse(
             'https://nominatim.openstreetmap.org/reverse?format=json&lat=$lat&lon=$lng&accept-language=ar'),
@@ -92,8 +346,11 @@ class _SearchGaragesScreenState extends State<SearchGaragesScreen> {
           lat,
           lng,
           Placemark(
-            locality: data['address']['city'] ?? data['address']['town'],
-            administrativeArea: data['address']['state'],
+            locality: data['address']['city'] ??
+                data['address']['town'] ??
+                data['address']['village'],
+            administrativeArea:
+                data['address']['state'] ?? data['address']['county'],
             country: data['address']['country'],
           ),
         );
@@ -103,108 +360,151 @@ class _SearchGaragesScreenState extends State<SearchGaragesScreen> {
       print("المحاولة الثانية فشلت: $e");
     }
 
-    // الحل البديل النهائي
     _updateLocationData(lat, lng, null);
   }
 
   void _updateLocationData(double lat, double lng, Placemark? place) {
     setState(() {
-      userLocation = LatLng(lat, lng);
-      _currentCity = place != null
+      _selectedLocation = latlong.LatLng(lat, lng);
+      _selectedCity = place != null
           ? "${place.locality ?? place.administrativeArea ?? 'موقع غير معروف'}"
           : "الإحداثيات: ${lat.toStringAsFixed(4)}, ${lng.toStringAsFixed(4)}";
     });
   }
 
+  Future<void> _selectLocationManually() async {
+    final latlong.LatLng? result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) =>
+            LocationPickerScreen(initialLocation: _selectedLocation),
+      ),
+    );
+
+    if (result != null) {
+      setState(() {
+        _selectedLocation = result;
+        _isLocationLoading = true;
+      });
+
+      try {
+        await _convertCoordinatesWithFallback(
+            result.latitude, result.longitude);
+      } catch (e) {
+        setState(() => _locationError = "خطأ في تحديد الموقع: ${e.toString()}");
+      } finally {
+        setState(() => _isLocationLoading = false);
+      }
+    }
+  }
+
   Widget _buildLocationStatus() {
-    if (_isLocationLoading) {
-      return const CircularProgressIndicator(
-        strokeWidth: 2,
-        valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
-      );
-    } else if (_locationError != null) {
-      return Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (_isLocationLoading)
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 10),
+            child: Center(
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
+              ),
+            ),
+          )
+        else if (_locationError != null)
           Container(
-            padding: const EdgeInsets.all(8),
+            padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
               color: Colors.red.shade100,
               borderRadius: BorderRadius.circular(12),
             ),
             child: Row(
-              mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.location_off, color: Colors.red, size: 20),
-                const SizedBox(width: 8),
-                Flexible(
+                const Icon(Icons.location_off, color: Colors.red, size: 24),
+                const SizedBox(width: 10),
+                Expanded(
                   child: Text(
                     _locationError!,
-                    style: const TextStyle(color: Colors.red, fontSize: 12),
-                    textAlign: TextAlign.center,
+                    style: const TextStyle(color: Colors.red, fontSize: 14),
                   ),
                 ),
               ],
             ),
-          ),
-          const SizedBox(height: 8),
-          ElevatedButton(
-            onPressed: _getCurrentLocation,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          )
+        else if (_selectedCity != null && _selectedLocation != null)
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.green.shade100,
+              borderRadius: BorderRadius.circular(12),
             ),
-            child: const Text("إعادة المحاولة", style: TextStyle(fontSize: 12)),
-          ),
-        ],
-      );
-    } else if (_currentCity != null) {
-      return Container(
-        padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(
-          color: Colors.green.shade100,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(Icons.location_on, color: Colors.green, size: 20),
-            const SizedBox(width: 4),
-            Flexible(
-              child: Text(
-                "المدينة: $_currentCity",
-                style: const TextStyle(color: Colors.green, fontSize: 12),
-                overflow: TextOverflow.ellipsis,
-              ),
+            child: Row(
+              children: [
+                const Icon(Icons.location_on, color: Colors.green, size: 24),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "الموقع: $_selectedCity",
+                        style: const TextStyle(
+                          color: Colors.green,
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        "الإحداثيات: ${_selectedLocation!.latitude.toStringAsFixed(5)}, ${_selectedLocation!.longitude.toStringAsFixed(5)}",
+                        style:
+                            const TextStyle(color: Colors.grey, fontSize: 12),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
-          ],
+          )
+        else
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.blue.shade100,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.location_searching,
+                    color: Colors.blue, size: 24),
+                const SizedBox(width: 10),
+                const Text(
+                  "جاري تحديد الموقع",
+                  style: TextStyle(color: Colors.blue, fontSize: 14),
+                ),
+              ],
+            ),
+          ),
+        const SizedBox(height: 15),
+        ElevatedButton.icon(
+          onPressed: _selectLocationManually,
+          icon: const Icon(Icons.map),
+          label: const Text("اختر موقعًا يدويًا على الخريطة"),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.blue.shade800,
+            foregroundColor: Colors.white,
+            padding: const EdgeInsets.symmetric(vertical: 14),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
         ),
-      );
-    } else {
-      return Container(
-        padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(
-          color: Colors.blue.shade100,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: const Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.location_searching, color: Colors.blue, size: 20),
-            SizedBox(width: 4),
-            Text("جاري تحديد الموقع",
-                style: TextStyle(color: Colors.blue, fontSize: 12)),
-          ],
-        ),
-      );
-    }
+      ],
+    );
   }
 
-  Future<String> _getAddressFromLatLng(LatLng location) async {
+  Future<String> _getAddressFromLatLng(latlong.LatLng location) async {
     if (_addressCache.containsKey(location)) {
       return _addressCache[location]!;
     }
@@ -302,7 +602,7 @@ class _SearchGaragesScreenState extends State<SearchGaragesScreen> {
                     ),
                   ),
                   child: Padding(
-                    padding: const EdgeInsets.all(12.0),
+                    padding: const EdgeInsets.all(16.0),
                     child: Column(
                       children: [
                         _buildDateTimePicker(
@@ -318,7 +618,7 @@ class _SearchGaragesScreenState extends State<SearchGaragesScreen> {
                           dateTime: departureTime,
                           onTap: _pickDepartureTime,
                         ),
-                        const SizedBox(height: 10),
+                        const SizedBox(height: 20),
                         _buildLocationStatus(),
                       ],
                     ),
@@ -353,7 +653,7 @@ class _SearchGaragesScreenState extends State<SearchGaragesScreen> {
                     splashColor: Colors.white.withOpacity(0.3),
                     child: Container(
                       width: double.infinity,
-                      height: 50,
+                      height: 55,
                       alignment: Alignment.center,
                       child: const Text(
                         "ابحث عن مواقف متاحة",
@@ -373,13 +673,13 @@ class _SearchGaragesScreenState extends State<SearchGaragesScreen> {
                 child: Row(
                   children: [
                     Container(
-                      padding: const EdgeInsets.all(6),
+                      padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
                         color: Colors.indigo.shade50,
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(10),
                       ),
                       child: const Icon(Icons.list,
-                          color: Colors.indigo, size: 24),
+                          color: Colors.indigo, size: 26),
                     ),
                     const SizedBox(width: 12),
                     const Text(
@@ -407,7 +707,7 @@ class _SearchGaragesScreenState extends State<SearchGaragesScreen> {
                               strokeWidth: 3,
                               color: Colors.indigo,
                             ),
-                            const SizedBox(height: 16),
+                            const SizedBox(height: 20),
                             Text(
                               "جاري البحث عن المواقف المتاحة...",
                               style: TextStyle(
@@ -425,21 +725,23 @@ class _SearchGaragesScreenState extends State<SearchGaragesScreen> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Icon(Icons.local_parking,
-                                  size: 60, color: Colors.grey.shade400),
-                              const SizedBox(height: 16),
+                                  size: 70, color: Colors.grey.shade400),
+                              const SizedBox(height: 20),
                               const Text(
                                 "لا توجد مواقف متاحة في الوقت المحدد",
                                 style: TextStyle(
-                                  fontSize: 16,
+                                  fontSize: 18,
                                   color: Colors.grey,
+                                  fontWeight: FontWeight.bold,
                                 ),
+                                textAlign: TextAlign.center,
                               ),
-                              const SizedBox(height: 8),
+                              const SizedBox(height: 10),
                               Text(
-                                "جرب تغيير أوقات البحث",
+                                "جرب تغيير أوقات البحث أو موقع البحث",
                                 style: TextStyle(
-                                  fontSize: 14,
-                                  color: Colors.grey.shade500,
+                                  fontSize: 15,
+                                  color: Colors.grey.shade600,
                                 ),
                               ),
                             ],
@@ -449,10 +751,17 @@ class _SearchGaragesScreenState extends State<SearchGaragesScreen> {
 
                       return ListView.separated(
                         itemCount: state.garages.length,
-                        separatorBuilder: (context, index) =>
-                            const Divider(height: 8),
+                        separatorBuilder: (context, index) => const Divider(
+                            height: 12, indent: 20, endIndent: 20),
                         itemBuilder: (context, index) {
                           final garage = state.garages[index];
+
+                          // حل مشكلة نوع LatLng بالتحويل
+                          final locationForAddress = latlong.LatLng(
+                            garage.location.latitude,
+                            garage.location.longitude,
+                          );
+
                           return AnimatedContainer(
                             duration:
                                 Duration(milliseconds: 300 + (index * 100)),
@@ -461,12 +770,14 @@ class _SearchGaragesScreenState extends State<SearchGaragesScreen> {
                                 0, index == 0 ? 0 : 20, 0),
                             child: Card(
                               elevation: 3,
-                              margin: const EdgeInsets.only(bottom: 12),
+                              margin: const EdgeInsets.symmetric(
+                                  horizontal: 10, vertical: 8),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(16),
                               ),
                               child: FutureBuilder<String>(
-                                future: _getAddressFromLatLng(garage.location),
+                                future:
+                                    _getAddressFromLatLng(locationForAddress),
                                 builder: (context, snapshot) {
                                   String addressText;
 
@@ -503,17 +814,17 @@ class _SearchGaragesScreenState extends State<SearchGaragesScreen> {
                                       child: Row(
                                         children: [
                                           Container(
-                                            width: 50,
-                                            height: 50,
+                                            width: 60,
+                                            height: 60,
                                             decoration: BoxDecoration(
                                               color: Colors.blue.shade50,
                                               borderRadius:
-                                                  BorderRadius.circular(12),
+                                                  BorderRadius.circular(15),
                                             ),
                                             child: const Icon(
                                               Icons.local_parking,
                                               color: Colors.blue,
-                                              size: 30,
+                                              size: 36,
                                             ),
                                           ),
                                           const SizedBox(width: 16),
@@ -526,54 +837,54 @@ class _SearchGaragesScreenState extends State<SearchGaragesScreen> {
                                                   garage.name,
                                                   style: const TextStyle(
                                                     fontWeight: FontWeight.bold,
-                                                    fontSize: 16,
+                                                    fontSize: 17,
                                                     color: Colors.indigo,
                                                   ),
                                                 ),
-                                                const SizedBox(height: 6),
+                                                const SizedBox(height: 8),
                                                 Row(
                                                   children: [
                                                     const Icon(Icons.car_rental,
-                                                        size: 14,
+                                                        size: 16,
                                                         color: Colors.grey),
-                                                    const SizedBox(width: 4),
+                                                    const SizedBox(width: 6),
                                                     Text(
                                                       "السعة: ${garage.capacity}",
                                                       style: const TextStyle(
-                                                          fontSize: 12,
+                                                          fontSize: 14,
                                                           color: Colors.grey),
                                                     ),
                                                   ],
                                                 ),
-                                                const SizedBox(height: 4),
+                                                const SizedBox(height: 5),
                                                 Row(
                                                   children: [
                                                     const Icon(
                                                         Icons.attach_money,
-                                                        size: 14,
+                                                        size: 16,
                                                         color: Colors.grey),
-                                                    const SizedBox(width: 4),
+                                                    const SizedBox(width: 6),
                                                     Text(
                                                       "السعر: ${garage.pricePerHour} ريال/ساعة",
                                                       style: const TextStyle(
-                                                          fontSize: 12,
+                                                          fontSize: 14,
                                                           color: Colors.grey),
                                                     ),
                                                   ],
                                                 ),
-                                                const SizedBox(height: 4),
+                                                const SizedBox(height: 5),
                                                 Row(
                                                   children: [
                                                     const Icon(
                                                         Icons.location_on,
-                                                        size: 14,
+                                                        size: 16,
                                                         color: Colors.grey),
-                                                    const SizedBox(width: 4),
+                                                    const SizedBox(width: 6),
                                                     Flexible(
                                                       child: Text(
                                                         addressText,
                                                         style: const TextStyle(
-                                                          fontSize: 12,
+                                                          fontSize: 14,
                                                           color: Colors.grey,
                                                         ),
                                                         maxLines: 1,
@@ -587,7 +898,7 @@ class _SearchGaragesScreenState extends State<SearchGaragesScreen> {
                                             ),
                                           ),
                                           const Icon(Icons.chevron_right,
-                                              color: Colors.blue),
+                                              color: Colors.blue, size: 30),
                                         ],
                                       ),
                                     ),
@@ -610,35 +921,43 @@ class _SearchGaragesScreenState extends State<SearchGaragesScreen> {
                                 shape: BoxShape.circle,
                               ),
                               child: Icon(Icons.error_outline,
-                                  size: 50, color: Colors.red.shade700),
+                                  size: 60, color: Colors.red.shade700),
                             ),
                             const SizedBox(height: 20),
-                            Text(
-                              state.error,
-                              style: TextStyle(
-                                fontSize: 16,
-                                color: Colors.red.shade700,
+                            Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 20),
+                              child: Text(
+                                state.error,
+                                style: TextStyle(
+                                  fontSize: 17,
+                                  color: Colors.red.shade700,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                textAlign: TextAlign.center,
                               ),
-                              textAlign: TextAlign.center,
                             ),
-                            const SizedBox(height: 20),
+                            const SizedBox(height: 25),
                             ElevatedButton(
                               onPressed: () =>
                                   context.read<ParkingBookingBloc>().add(
                                         SearchGaragesEvent1(
                                           arrivalTime: arrivalTime!,
                                           departureTime: departureTime!,
-                                          city: _currentCity!,
+                                          city: _selectedCity!,
                                         ),
                                       ),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.red,
                                 foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 30, vertical: 15),
                                 shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10),
+                                  borderRadius: BorderRadius.circular(15),
                                 ),
                               ),
-                              child: const Text("إعادة المحاولة"),
+                              child: const Text("إعادة المحاولة",
+                                  style: TextStyle(fontSize: 16)),
                             ),
                           ],
                         ),
@@ -655,13 +974,30 @@ class _SearchGaragesScreenState extends State<SearchGaragesScreen> {
                                 shape: BoxShape.circle,
                               ),
                               child: Icon(Icons.search,
-                                  size: 50, color: Colors.blue.shade700),
+                                  size: 60, color: Colors.blue.shade700),
                             ),
-                            const SizedBox(height: 20),
+                            const SizedBox(height: 25),
                             const Text(
                               "حدد أوقات البحث ثم اضغط على زر البحث",
                               style: TextStyle(
-                                  fontSize: 16, color: Colors.blueGrey),
+                                fontSize: 18,
+                                color: Colors.blueGrey,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 10),
+                            Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 30),
+                              child: Text(
+                                "يمكنك أيضًا تحديد موقع البحث يدويًا باستخدام الخريطة",
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  color: Colors.grey.shade600,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
                             ),
                           ],
                         ),
@@ -685,18 +1021,18 @@ class _SearchGaragesScreenState extends State<SearchGaragesScreen> {
   }) {
     return ListTile(
       leading: Container(
-        width: 40,
-        height: 40,
+        width: 45,
+        height: 45,
         decoration: BoxDecoration(
           color: Colors.blue.shade100,
           shape: BoxShape.circle,
         ),
-        child: Icon(icon, color: Colors.blue, size: 20),
+        child: Icon(icon, color: Colors.blue, size: 24),
       ),
       title: Text(
         title,
-        style:
-            const TextStyle(fontWeight: FontWeight.bold, color: Colors.indigo),
+        style: const TextStyle(
+            fontWeight: FontWeight.bold, color: Colors.indigo, fontSize: 16),
       ),
       subtitle: Text(
         dateTime != null
@@ -705,15 +1041,16 @@ class _SearchGaragesScreenState extends State<SearchGaragesScreen> {
         style: TextStyle(
           color: dateTime != null ? Colors.grey.shade800 : Colors.grey,
           fontWeight: dateTime != null ? FontWeight.w500 : FontWeight.normal,
+          fontSize: 14,
         ),
       ),
       trailing: Container(
-        padding: const EdgeInsets.all(6),
+        padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
           color: Colors.blue.shade100,
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(12),
         ),
-        child: const Icon(Icons.edit_calendar, color: Colors.blue, size: 20),
+        child: const Icon(Icons.edit_calendar, color: Colors.blue, size: 24),
       ),
       onTap: onTap,
     );
@@ -786,16 +1123,16 @@ class _SearchGaragesScreenState extends State<SearchGaragesScreen> {
           ),
           backgroundColor: Colors.red.shade400,
           margin: const EdgeInsets.all(20),
-          duration: const Duration(seconds: 2),
+          duration: const Duration(seconds: 3),
         ),
       );
       return;
     }
 
-    if (_locationError != null || _currentCity == null) {
+    if (_selectedLocation == null || _selectedCity == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(_locationError ?? "تعذر تحديد المدينة"),
+          content: const Text("يرجى تحديد موقع البحث"),
           backgroundColor: Colors.red,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(
@@ -811,7 +1148,7 @@ class _SearchGaragesScreenState extends State<SearchGaragesScreen> {
           SearchGaragesEvent1(
             arrivalTime: arrivalTime!,
             departureTime: departureTime!,
-            city: _currentCity!,
+            city: _selectedCity!,
           ),
         );
   }

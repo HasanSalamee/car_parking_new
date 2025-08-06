@@ -57,9 +57,10 @@ class PaymentRemoteDataSourceImpl implements PaymentRemoteDataSource {
       },
     );
 
-    if (response.statusCode == 201) {
+    if (response.statusCode == 200) {
       return TransactionModel.fromJson(response.data);
     }
+    print(response.data);
 
     throw DioException(
       requestOptions: response.requestOptions,
@@ -186,7 +187,7 @@ class PaymentRemoteDataSourceImpl implements PaymentRemoteDataSource {
       if (endDate != null) queryParams['endDate'] = endDate.toIso8601String();
 
       final response = await dio.get(
-        'api/Payment/history/45',
+        'api/Payment/history',
         queryParameters: queryParams.isNotEmpty ? queryParams : null,
         options: Options(
           validateStatus: (status) => status == 200 || status == 204,

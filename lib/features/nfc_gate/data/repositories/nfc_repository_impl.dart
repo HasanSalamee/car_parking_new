@@ -9,12 +9,12 @@ import 'package:flutter/services.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:flutter_nfc_kit/flutter_nfc_kit.dart';
 import 'dart:convert';
-
 import 'package:ndef/records/well_known/text.dart';
 
 class NfcRepositoryImpl implements NfcRepository {
   final NfcRemoteDatasource remoteDatasource;
   final NfcLocalDatasource localDatasource;
+  BluetoothDevice? _cachedDevice; // تخزين الجهاز للاستخدام المستقبلي
 
   NfcRepositoryImpl({
     required this.remoteDatasource,
@@ -85,20 +85,52 @@ class NfcRepositoryImpl implements NfcRepository {
       final ticketData = _serializeTicket(cachedTicket);
       final encodedData = utf8.encode(ticketData);
 
+      // التأكد من أن Bluetooth مفعل
       final isBluetoothEnabled = await FlutterBluePlus.isOn;
       if (!isBluetoothEnabled) {
         return Left(NfcFailure(message: 'Bluetooth غير مفعل'));
       }
 
-      await FlutterBluePlus.startScan(timeout: const Duration(seconds: 4));
-      final scanResult = await FlutterBluePlus.scanResults.firstWhere(
-        (results) => results.isNotEmpty,
-        orElse: () => throw Exception('لم يتم العثور على أجهزة'),
-      );
+      // بدء البحث عن أي جهاز متاح
+      await FlutterBluePlus.startScan(timeout: const Duration(seconds: 8));
+
+      BluetoothDevice? targetDevice;
+
+      await for (var results in FlutterBluePlus.scanResults) {
+        for (var result in results) {
+          // التأكد من أن اسم الجهاز ليس فارغًا (اختياري)
+          if ((result.device.platformName ?? '').isNotEmpty) {
+            targetDevice = result.device;
+            break;
+          }
+        }
+        if (targetDevice != null) break;
+      }
+
       await FlutterBluePlus.stopScan();
 
-      final device = scanResult.first.device;
-      await device.connect(timeout: const Duration(seconds: 10));
+      if (targetDevice == null) {
+        return Left(NfcFailure(message: 'لم يتم العثور على أي جهاز Bluetooth'));
+      }
+
+      _cachedDevice = targetDevice;
+
+      // محاولة الإرسال
+      await _attemptSendToDevice(targetDevice, encodedData);
+
+      return const Right(unit);
+    } on PlatformException catch (e) {
+      return Left(NfcFailure(message: 'خطأ في Bluetooth: ${e.message}'));
+    } catch (e) {
+      return Left(
+          NfcFailure(message: 'خطأ في إرسال التذكرة عبر Bluetooth: $e'));
+    }
+  }
+
+  Future<void> _attemptSendToDevice(
+      BluetoothDevice device, List<int> data) async {
+    try {
+      await device.connect(timeout: const Duration(seconds: 15));
 
       final services = await device.discoverServices();
       BluetoothCharacteristic? writableChar;
@@ -114,19 +146,12 @@ class NfcRepositoryImpl implements NfcRepository {
       }
 
       if (writableChar == null) {
-        await device.disconnect();
         throw Exception('لم يتم العثور على خاصية قابلة للكتابة');
       }
 
-      await writableChar.write(encodedData, withoutResponse: true);
+      await writableChar.write(data, withoutResponse: true);
+    } finally {
       await device.disconnect();
-
-      return const Right(unit);
-    } on PlatformException catch (e) {
-      return Left(NfcFailure(message: 'خطأ في Bluetooth: ${e.message}'));
-    } catch (e) {
-      return Left(
-          NfcFailure(message: 'خطأ في إرسال التذكرة عبر Bluetooth: $e'));
     }
   }
 

@@ -25,4 +25,6 @@ class PaymentLocalDataSourceImpl implements PaymentLocalDataSource {
     final key = '$_balanceKey$userId';
     await storage.write(key: key, value: balance.toString());
   }
+  
 }
+

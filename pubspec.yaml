@@ -38,6 +38,9 @@ dependencies:
   flutter_nfc_kit: ^3.3.3
   ndef: ^0.3.4
   jwt_decoder: ^2.0.1
+  flutter_map: ^5.0.0
+  latlong2: ^0.9.0
+
 
 dev_dependencies:
   flutter_test:

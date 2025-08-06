@@ -31,28 +31,36 @@ void main() async {
   final dioFactory = DioFactory();
   final dio = await dioFactory.createDio();
 
-  runApp(MyApp(dio: dio));
+  // ✅ قراءة التوكن من التخزين الآمن
+  const storage = FlutterSecureStorage();
+  final token = await storage.read(key: 'token');
+
+  final initialRoute =
+      (token != null && token.isNotEmpty) ? AppRouter.home : AppRouter.login;
+
+  runApp(MyApp(dio: dio, initialRoute: initialRoute));
 }
 
 class MyApp extends StatelessWidget {
   static final _log = Logger('SiteInfo');
   final Dio? dio;
+  final String initialRoute;
 
-  const MyApp({super.key, this.dio});
+  const MyApp({
+    super.key,
+    this.dio,
+    required this.initialRoute,
+  });
 
   @override
   Widget build(BuildContext context) {
     final Dio _dio = dio ?? Dio();
     const storage = FlutterSecureStorage();
 
-    // إنشاء مصادر البيانات المحلية أولاً
     final authLocalDataSource = AuthLocalDataSourceImpl(storage);
-
-    // إنشاء HttpHeadersProvider
     final httpHeadersProvider =
         HttpHeadersProvider(authLocalDataSource: authLocalDataSource);
 
-    // auth
     final authRemoteDataSource = AuthRemoteDataSourceImpl(
       _dio,
       httpHeadersProvider,
@@ -62,24 +70,24 @@ class MyApp extends StatelessWidget {
       localDataSource: authLocalDataSource,
     );
 
-    // payment
     final paymentLocalDataSource = PaymentLocalDataSourceImpl(storage: storage);
     final paymentRemoteDataSource =
         PaymentRemoteDataSourceImpl(_dio, httpHeadersProvider);
+
+    final nfcRemoteDataSource = NfcRemoteDatasource(dio: _dio);
+    final nfcLocalDataSource = NfcLocalDatasource(storage: storage);
+
     final paymentRepository = PaymentRepositoryImpl(
       remoteDataSource: paymentRemoteDataSource,
       localDataSource: paymentLocalDataSource,
+      nfcLocalDatasource: nfcLocalDataSource,
     );
 
-    // booking
     final bookingRemoteDataSource =
         ParkingRemoteDataSourceImpl(_dio, httpHeadersProvider);
     final bookingRepository =
         BookingParkingRepositoryImpl(bookingRemoteDataSource);
 
-    // NFC
-    final nfcRemoteDataSource = NfcRemoteDatasource(dio: _dio);
-    final nfcLocalDataSource = NfcLocalDatasource(storage: storage);
     final nfcRepository = NfcRepositoryImpl(
       remoteDatasource: nfcRemoteDataSource,
       localDatasource: nfcLocalDataSource,
@@ -109,7 +117,7 @@ class MyApp extends StatelessWidget {
           primarySwatch: Colors.blue,
           visualDensity: VisualDensity.adaptivePlatformDensity,
         ),
-        initialRoute: AppRouter.login,
+        initialRoute: initialRoute, // ✅ هنا التوجيه التلقائي
         onGenerateRoute: AppRouter.generateRoute,
         debugShowCheckedModeBanner: false,
       ),

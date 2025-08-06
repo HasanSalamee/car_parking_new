@@ -1,3 +1,5 @@
+import 'package:car_parking/features/nfc_gate/data/datasources/nfc_local_datasource.dart';
+import 'package:car_parking/features/nfc_gate/domain/entities/nfs_ticket.dart';
 import 'package:car_parking/features/payment/Domain/entity/transaction_entity.dart';
 import 'package:car_parking/features/payment/Domain/repository/payment_reposiory.dart';
 import 'package:car_parking/features/payment/data/datasources/payment_local_datasource.dart';
@@ -9,10 +11,12 @@ import 'package:dio/dio.dart';
 class PaymentRepositoryImpl implements PaymentRepository {
   final PaymentRemoteDataSource remoteDataSource;
   final PaymentLocalDataSource localDataSource;
+  final NfcLocalDatasource nfcLocalDatasource;
 
   PaymentRepositoryImpl({
     required this.remoteDataSource,
     required this.localDataSource,
+    required this.nfcLocalDatasource,
   });
 
   @override
@@ -60,14 +64,14 @@ class PaymentRepositoryImpl implements PaymentRepository {
     required double amount,
   }) async {
     try {
-      // 1. Check balance sufficiency
-      final isSufficient = await checkBalanceSufficiency(userId, amount);
+      // 1. Check balance sufficiency (معلق حالياً)
+      /* final isSufficient = await checkBalanceSufficiency(userId, amount);
       if (isSufficient.isLeft() || !(isSufficient.getOrElse(() => false))) {
         return Left(GarageNotAvailableFailure('Insufficient balance'));
-      }
+      }*/
 
-      // 2. Deduct amount
-      //  await remoteDataSource.updateWalletBalance(userId, -amount);
+      // 2. Deduct amount (معلق حالياً)
+      // await remoteDataSource.updateWalletBalance(userId, -amount);
 
       // 3. Create transaction
       final transaction = await remoteDataSource.createPaymentTransaction(
@@ -76,8 +80,23 @@ class PaymentRepositoryImpl implements PaymentRepository {
         amount: amount,
       );
 
-      // 4. Update booking status
-      await updateBookingStatus(bookingId: bookingId, status: 'paid');
+      // 4. إنشاء وتخزين تذكرة NFC
+      final nfcTicket = NfcTicket(
+        tokenId:
+            transaction.nfcTicket.tokenId, // استخدام معرّف المعاملة كـ tokenId
+        tokenValue: transaction.nfcTicket.tokenValue, // قيمة التذكرة
+        bookingId: bookingId,
+        userId: transaction.userId,
+        tokenValidFrom: transaction.nfcTicket.tokenValidFrom,
+        tokenValidTo: transaction.nfcTicket.tokenValidTo, // صلاحية يوم واحد
+        isUsed: transaction.nfcTicket.isUsed,
+      );
+
+      // تخزين التذكرة في التخزين المحلي
+      await nfcLocalDatasource.cacheTicket(nfcTicket);
+
+      // 5. Update booking status (معلق حالياً)
+      // await updateBookingStatus(bookingId: bookingId, status: 'paid');
 
       return Right(transaction);
     } on DioException catch (e) {
@@ -122,7 +141,6 @@ class PaymentRepositoryImpl implements PaymentRepository {
         statusCode: e.response?.statusCode,
       ));
     } on Exception catch (e) {
-      // تم استبدال DatabaseException
       return Left(DatabaseFailure(e.toString()));
     } catch (e) {
       return Left(UnknownFailure.fromError(e));
@@ -146,7 +164,6 @@ class PaymentRepositoryImpl implements PaymentRepository {
         statusCode: e.response?.statusCode,
       ));
     } on Exception catch (e) {
-      // تم استبدال DatabaseException
       return Left(DatabaseFailure(e.toString()));
     } catch (e) {
       return Left(UnknownFailure.fromError(e));
@@ -167,7 +184,6 @@ class PaymentRepositoryImpl implements PaymentRepository {
         statusCode: e.response?.statusCode,
       ));
     } on Exception catch (e) {
-      // تم استبدال DatabaseException
       return Left(DatabaseFailure(e.toString()));
     } catch (e) {
       return Left(UnknownFailure.fromError(e));
@@ -204,7 +220,6 @@ class PaymentRepositoryImpl implements PaymentRepository {
         statusCode: e.response?.statusCode,
       ));
     } on Exception catch (e) {
-      // تم استبدال DatabaseException
       return Left(DatabaseFailure(e.toString()));
     } catch (e) {
       return Left(UnknownFailure.fromError(e));
@@ -232,7 +247,6 @@ class PaymentRepositoryImpl implements PaymentRepository {
         statusCode: e.response?.statusCode,
       ));
     } on Exception catch (e) {
-      // تم استبدال DatabaseException
       return Left(DatabaseFailure(e.toString()));
     } catch (e) {
       return Left(UnknownFailure.fromError(e));

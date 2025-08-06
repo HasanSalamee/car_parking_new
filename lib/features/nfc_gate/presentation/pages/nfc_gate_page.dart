@@ -1,6 +1,4 @@
 import 'package:car_parking/Core/router/router.dart';
-import 'package:car_parking/features/Parking/Presentation/Bloc/parking_booking_bloc.dart';
-import 'package:car_parking/features/Parking/Presentation/Bloc/parking_booking_event.dart';
 import 'package:car_parking/features/nfc_gate/domain/entities/nfs_ticket.dart';
 import 'package:car_parking/features/nfc_gate/presentation/bloc/nfc_bloc.dart';
 import 'package:car_parking/features/nfc_gate/presentation/bloc/nfc_event.dart';
@@ -24,13 +22,8 @@ class PairingScreen extends StatefulWidget {
 class _PairingScreenState extends State<PairingScreen> {
   SendMethod _selectedMethod = SendMethod.bluetooth;
 
-  void _returnToHomeAndUpdateBookings() {
-    // الخطوة 1: إرسال طلب لتحديث بيانات الحجوزات في الصفحة الرئيسية
-    context
-        .read<ParkingBookingBloc>()
-        .add(GetUserBookingsEvent(userId: widget.nfcTicket.userId));
-
-    // الخطوة 2: العودة مباشرة إلى الصفحة الرئيسية وإغلاق كل الصفحات التي فوقها
+  void _returnToHome() {
+    // فقط العودة للصفحة الرئيسية بدون أي عمليات أخرى
     Navigator.popUntil(context, ModalRoute.withName(AppRouter.home));
   }
 
@@ -39,10 +32,9 @@ class _PairingScreenState extends State<PairingScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('إرسال التذكرة'),
-        // تعديل: إضافة زر رجوع مخصص لضمان تحديث البيانات عند الخروج
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: _returnToHomeAndUpdateBookings,
+          onPressed: _returnToHome,
         ),
       ),
       body: BlocConsumer<NfcBloc, NfcState>(
@@ -65,7 +57,6 @@ class _PairingScreenState extends State<PairingScreen> {
           return Padding(
             padding: const EdgeInsets.all(24.0),
             child: SingleChildScrollView(
-              // تعديل: إضافة SingleChildScrollView لتجنب تجاوز المحتوى
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -142,8 +133,7 @@ class _PairingScreenState extends State<PairingScreen> {
             ),
             const SizedBox(height: 24),
             ElevatedButton(
-              onPressed:
-                  _returnToHomeAndUpdateBookings, // *** التعديل الرئيسي هنا ***
+              onPressed: _returnToHome,
               child: const Text('العودة للرئيسية'),
             ),
           ],
@@ -178,7 +168,6 @@ class _PairingScreenState extends State<PairingScreen> {
         ),
       );
     } else {
-      // الحالة الافتراضية قبل الضغط على أي زر
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -226,7 +215,6 @@ class _PairingScreenState extends State<PairingScreen> {
     }
   }
 
-  // ويدجت مساعد لتحسين شكل عرض البيانات
   Widget _buildInfoField(String label, String value,
       {bool canCopy = true, bool isLongText = false}) {
     return Padding(

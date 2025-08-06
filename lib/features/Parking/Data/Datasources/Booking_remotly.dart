@@ -39,7 +39,7 @@ abstract class ParkingRemoteDataSource {
   Future<void> cancelBooking(String bookingId);
   Future<BookingEntity> confirmBooking(String bookingId);
   Future<BookingModel> extendBooking(String bookingId, DateTime newEndTime);
-  Future<List<BookingModel>> getUserBookings();
+  Future<List<BookingEntity>> getUserBookings();
 
   Future<void> sendNotification({
     required String userId,
@@ -196,7 +196,7 @@ class ParkingRemoteDataSourceImpl implements ParkingRemoteDataSource {
   }
 
   @override
-  Future<List<BookingModel>> getUserBookings() async {
+  Future<List<BookingEntity>> getUserBookings() async {
     final headers = await headersProvider.getAuthHeaders();
 
     try {

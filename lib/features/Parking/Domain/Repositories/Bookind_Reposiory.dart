@@ -41,7 +41,7 @@ abstract class ParkingBookingRepository {
 
   extendBooking(String bookingId, DateTime newEndTime) {}
 
-  getUserBookings(String userId) {}
+  Future<Either<Failure, List<BookingEntity>>> getUserBookings(String userId);
 
   handleEarlyArrival(String bookingId, DateTime actualArrivalTime) {}
 

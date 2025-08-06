@@ -25,7 +25,18 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
+    _loadUserData();
+  }
+
+  void _loadUserData() {
     context.read<AuthBloc>().add(GetCurrentUserEvent());
+  }
+
+  void _refreshData() {
+    setState(() {
+      _isLoadingUser = true;
+    });
+    _loadUserData();
   }
 
   @override
@@ -41,17 +52,16 @@ class _HomeScreenState extends State<HomeScreen> {
                   _userId = user.id;
                   _isLoadingUser = false;
                 });
-                // جلب حجوزات المستخدم بمجرد الحصول على الـ user ID
-                // context
-                //.read<ParkingBookingBloc>()
-                //       .add(GetUserBookingsEvent(userId: user.id));
+                context
+                    .read<ParkingBookingBloc>()
+                    .add(GetUserBookingsEvent(userId: user.id));
               } else {
                 setState(() => _isLoadingUser = false);
               }
             } else if (authState is AuthFailure) {
               setState(() => _isLoadingUser = false);
               Future.microtask(() {
-                // Navigator.pushReplacementNamed(context, '/login');
+                Navigator.pushReplacementNamed(context, AppRouter.login);
               });
             } else if (authState is AuthLoading) {
               setState(() => _isLoadingUser = true);
@@ -59,7 +69,16 @@ class _HomeScreenState extends State<HomeScreen> {
           },
         ),
         BlocListener<ParkingBookingBloc, ParkingBookingState>(
-          listener: (context, bookingState) {},
+          listener: (context, bookingState) {
+            if (bookingState is ParkingBookingError) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(bookingState.error),
+                  backgroundColor: Colors.red,
+                ),
+              );
+            }
+          },
         ),
       ],
       child: Scaffold(
@@ -74,6 +93,11 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           centerTitle: true,
           actions: [
+            IconButton(
+              icon: const Icon(Icons.refresh, color: Colors.white),
+              tooltip: 'تحديث البيانات',
+              onPressed: _refreshData,
+            ),
             IconButton(
               icon:
                   const Icon(Icons.account_balance_wallet, color: Colors.white),
@@ -99,7 +123,7 @@ class _HomeScreenState extends State<HomeScreen> {
               icon: const Icon(Icons.logout, color: Colors.white),
               tooltip: 'تسجيل الخروج',
               onPressed: () {
-                Navigator.pushReplacementNamed(context, '/login');
+                Navigator.pushReplacementNamed(context, AppRouter.login);
               },
             ),
           ],
@@ -284,16 +308,28 @@ class _HomeScreenState extends State<HomeScreen> {
                                 return _buildNoBookingsCard();
                               }
 
-                              return ListView.builder(
-                                itemCount: activeBookings.length,
-                                itemBuilder: (context, index) {
-                                  final booking = activeBookings[index];
-                                  return Padding(
-                                    padding:
-                                        const EdgeInsets.only(bottom: 16.0),
-                                    child: _buildBookingCard(booking, index),
-                                  );
+                              return RefreshIndicator(
+                                onRefresh: () async {
+                                  if (_userId != null) {
+                                    context.read<ParkingBookingBloc>().add(
+                                        GetUserBookingsEvent(userId: _userId!));
+                                  }
+                                  await Future.delayed(
+                                      const Duration(seconds: 1));
                                 },
+                                child: ListView.builder(
+                                  physics:
+                                      const AlwaysScrollableScrollPhysics(),
+                                  itemCount: activeBookings.length,
+                                  itemBuilder: (context, index) {
+                                    final booking = activeBookings[index];
+                                    return Padding(
+                                      padding:
+                                          const EdgeInsets.only(bottom: 16.0),
+                                      child: _buildBookingCard(booking, index),
+                                    );
+                                  },
+                                ),
                               );
                             } else if (state is ParkingBookingError) {
                               return Center(
@@ -461,9 +497,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       icon: Icons.cancel,
                       color: Colors.red,
                       onPressed: () {
-                        context
-                            .read<ParkingBookingBloc>()
-                            .add(CancelBookingEvent(bookingId: booking.id!));
+                        _showCancelConfirmationDialog(context, booking);
                       },
                     ),
                     _buildActionButton(
@@ -539,49 +573,94 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // بناء بطاقة عدم وجود حجوزات
   Widget _buildNoBookingsCard() {
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
-          gradient: LinearGradient(
-            colors: [Colors.white, Colors.blue.shade50],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
-        child: const Padding(
-          padding: EdgeInsets.all(24.0),
-          child: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.calendar_today, size: 60, color: Colors.blueGrey),
-                SizedBox(height: 20),
-                Text(
-                  'لا يوجد حجوزات حالية',
-                  style: TextStyle(
-                    fontSize: 18,
-                    color: Colors.blueGrey,
-                    fontWeight: FontWeight.w600,
+    return RefreshIndicator(
+      onRefresh: () async {
+        if (_userId != null) {
+          context
+              .read<ParkingBookingBloc>()
+              .add(GetUserBookingsEvent(userId: _userId!));
+        }
+        await Future.delayed(const Duration(seconds: 1));
+      },
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        child: SizedBox(
+          height: MediaQuery.of(context).size.height * 0.5,
+          child: Card(
+            elevation: 4,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(16),
+                gradient: LinearGradient(
+                  colors: [Colors.white, Colors.blue.shade50],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+              ),
+              child: const Padding(
+                padding: EdgeInsets.all(24.0),
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.calendar_today,
+                          size: 60, color: Colors.blueGrey),
+                      SizedBox(height: 20),
+                      Text(
+                        'لا يوجد حجوزات حالية',
+                        style: TextStyle(
+                          fontSize: 18,
+                          color: Colors.blueGrey,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      SizedBox(height: 10),
+                      Text(
+                        'استخدم زر "ابحث الآن" لحجز موقف جديد',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Colors.grey,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                SizedBox(height: 10),
-                Text(
-                  'استخدم زر "ابحث الآن" لحجز موقف جديد',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Colors.grey,
-                    fontSize: 14,
-                  ),
-                ),
-              ],
+              ),
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  // عرض تأكيد الإلغاء
+  void _showCancelConfirmationDialog(
+      BuildContext context, BookingEntity booking) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('تأكيد الإلغاء'),
+        content: const Text('هل أنت متأكد من رغبتك في إلغاء هذا الحجز؟'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('تراجع'),
+          ),
+          TextButton(
+            onPressed: () {
+              context
+                  .read<ParkingBookingBloc>()
+                  .add(CancelBookingEvent(bookingId: booking.id!));
+              Navigator.pop(context);
+            },
+            child: const Text('تأكيد الإلغاء',
+                style: TextStyle(color: Colors.red)),
+          ),
+        ],
       ),
     );
   }

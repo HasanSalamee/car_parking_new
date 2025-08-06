@@ -60,6 +60,7 @@ class PaymentRemoteDataSourceImpl implements PaymentRemoteDataSource {
     if (response.statusCode == 200) {
       return TransactionModel.fromJson(response.data);
     }
+    print("HIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII");
     print(response.data);
 
     throw DioException(

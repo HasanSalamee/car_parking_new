@@ -319,24 +319,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           _isLoading = false;
                         });
 
-                        // إظهار رسالة نجاح
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: const Text('تم إنشاء الحساب بنجاح'),
-                            backgroundColor: Colors.green.shade700,
-                            behavior: SnackBarBehavior.floating,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            margin: const EdgeInsets.all(20),
-                          ),
+                        // التعديل هنا: الانتقال مباشرة إلى الصفحة الرئيسية
+                        Navigator.pushNamedAndRemoveUntil(
+                          context,
+                          AppRouter.home,
+                          (route) => false, // إزالة جميع الشاشات من المكدس
                         );
-
-                        // التحويل إلى صفحة الدخول بعد 2 ثانية
-                        Future.delayed(const Duration(seconds: 2), () {
-                          Navigator.pushReplacementNamed(
-                              context, AppRouter.login);
-                        });
                       }
                       if (state is AuthFailure) {
                         setState(() {

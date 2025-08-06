@@ -189,6 +189,7 @@ class NfcRepositoryImpl implements NfcRepository {
   Future<Either<Failure, NfcTicket?>> getCachedTicket() async {
     try {
       final ticket = await localDatasource.getCachedTicket();
+      //   clearCachedTicket();
       return Right(ticket);
     } on DatabaseException catch (e) {
       return Left(DatabaseFailure(e.message));

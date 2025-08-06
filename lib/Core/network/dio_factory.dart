@@ -37,7 +37,7 @@ class DioFactory {
   Future<Dio> createDio() async {
     final dio = Dio();
 
-    dio.options.baseUrl = 'https://59252e8bf43c.ngrok-free.app/';
+    dio.options.baseUrl = 'https://27162546ab51.ngrok-free.app/';
     dio.options.connectTimeout = const Duration(seconds: 5);
     dio.options.receiveTimeout = const Duration(seconds: 5);
     return dio;

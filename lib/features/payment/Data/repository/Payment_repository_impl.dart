@@ -94,6 +94,7 @@ class PaymentRepositoryImpl implements PaymentRepository {
 
       // تخزين التذكرة في التخزين المحلي
       await nfcLocalDatasource.cacheTicket(nfcTicket);
+      
 
       // 5. Update booking status (معلق حالياً)
       // await updateBookingStatus(bookingId: bookingId, status: 'paid');

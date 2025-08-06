@@ -66,7 +66,7 @@ class AuthRepositoryImpl implements AuthRepository {
 
       // حفظ قيمة الـ token في التخزين المحلي
       await localDataSource.saveToken(response.value);
-      
+
       return Right(TokenEntity(
         id: /*"99",*/ response.id,
         value: /*"hiih",*/ response.value,
@@ -82,7 +82,6 @@ class AuthRepositoryImpl implements AuthRepository {
       return Left(ServerFailure('ف الدخول: ${e.message}'));
     } catch (e) {
       return Left(WrongDataFailure('خطأ في تسجيل الدخول: $e'));
-
     }
   }
 

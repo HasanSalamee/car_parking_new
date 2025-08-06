@@ -180,7 +180,8 @@ class ParkingRemoteDataSourceImpl implements ParkingRemoteDataSource {
     final headers = await headersProvider.getAuthHeaders();
     try {
       final response = await dio.delete(
-        'api/booking/cancel/',
+        'api/Booking/cancel',
+        data: {'bookingId': bookingId},
         options: Options(
           headers: headers,
           validateStatus: (status) => status == 200 || status == 404,

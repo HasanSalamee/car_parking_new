@@ -24,7 +24,15 @@ class _PairingScreenState extends State<PairingScreen> {
 
   void _returnToHome() {
     // فقط العودة للصفحة الرئيسية بدون أي عمليات أخرى
-    Navigator.popUntil(context, ModalRoute.withName(AppRouter.home));
+    Navigator.pop(context);
+/*
+                    Navigator.pushNamedAndRemoveUntil(
+                      context,
+                      AppRouter.home,
+                      (route) => false,
+                      arguments: ticket.userId,
+                    );
+                    */
   }
 
   @override
